@@ -1,4 +1,4 @@
-@extends('layouts.app') 
+@extends('layouts.app')
 @section('title', 'Credys | Clientes  | Nuevo')
 
 @section('styles')
@@ -202,6 +202,7 @@
         }
     }
 </style>
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 @endsection
 
 @section('content')
@@ -223,7 +224,7 @@
     <div class="content-area">
         <div class="form-container">
             <h1 class="form-title">Formulario de Registro de Cliente</h1>
-            
+
             {{-- Mostrar mensajes de error --}}
             @if ($errors->any())
             <div id="error-messages" class="alert alert-danger">
@@ -231,7 +232,7 @@
                 <p>Algunos campos son requeridos o tienen errores. Por favor, verifica la información.</p>
             </div>
             @endif
-            
+
             <div class="tabs">
                 <div class="tab active" data-tab="general">Información General</div>
                 <div class="tab" data-tab="referencias">Referencias</div>
@@ -309,13 +310,13 @@
                         <select id="lugar_nacimiento" name="lugar_nacimiento" class="form-control" data-required="true">
                             <option value="">Seleccione un estado</option>
                             @foreach([
-                                'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 
-                                'Coahuila', 'Colima', 'Chiapas', 'Chihuahua', 'Distrito Federal', 
-                                'CDMX', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 
-                                'Jalisco', 'Estado de México', 'No especificado', 'Michoacán', 
-                                'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 
-                                'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 
-                                'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 
+                                'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche',
+                                'Coahuila', 'Colima', 'Chiapas', 'Chihuahua', 'Distrito Federal',
+                                'CDMX', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo',
+                                'Jalisco', 'Estado de México', 'No especificado', 'Michoacán',
+                                'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla',
+                                'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa',
+                                'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz',
                                 'Yucatán', 'Zacatecas'
                             ] as $estado)
                                 <option value="{{ $estado }}" {{ old('lugar_nacimiento') === $estado ? 'selected' : '' }}>{{ $estado }}</option>
@@ -664,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fieldType = field.type;
             if (
                 ((fieldType === 'radio' && !document.querySelector(`input[name="${field.name}"]:checked`)) ||
-                fieldType !== 'radio') && 
+                fieldType !== 'radio') &&
                 !field.value.trim()
             ) {
                 errorMessages.push(`- ${field.previousElementSibling.innerText}`);
