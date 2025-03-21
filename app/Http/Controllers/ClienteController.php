@@ -12,15 +12,15 @@ class ClienteController extends Controller
     public function index()
     {
         $user = auth()->user();
-    
+
         if ($user->hasRole('admin')) {
-            $clientes = Cliente::with('user')->get();
+            $clientes = Cliente::with('user')->paginate(10);
         } else {
             $clientes = Cliente::where('sucursal_id', $user->sucursal_id)
-                                ->where('user_id', $user->id)
-                                ->get();
+                ->where('user_id', $user->id)
+                ->paginate(10);
         }
-    
+
         return view('clientes.index', compact('clientes'));
     }
 
@@ -33,7 +33,7 @@ class ClienteController extends Controller
     {
         $user = auth()->user();
         $validatedData = $request->validated();
-        
+
         $cliente = new Cliente($validatedData);
         $cliente->user_id = $user->id;
         $cliente->sucursal_id = $user->sucursal_id;
@@ -51,18 +51,18 @@ class ClienteController extends Controller
     public function show($id)
     {
         $cliente = Cliente::where('id', $id)
-                          ->where('user_id', auth()->id())
-                          ->where('sucursal_id', auth()->user()->sucursal_id)
-                          ->firstOrFail();
+            ->where('user_id', auth()->id())
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->firstOrFail();
         return view('clientes.show', compact('cliente'));
     }
 
     public function edit($id)
     {
         $cliente = Cliente::where('id', $id)
-                          ->where('user_id', auth()->id())
-                          ->where('sucursal_id', auth()->user()->sucursal_id)
-                          ->firstOrFail();
+            ->where('user_id', auth()->id())
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->firstOrFail();
         return view('clientes.edit', compact('cliente'));
     }
 
@@ -89,16 +89,17 @@ class ClienteController extends Controller
     public function destroy($id)
     {
         $cliente = Cliente::where('id', $id)
-                          ->where('user_id', auth()->id())
-                          ->where('sucursal_id', auth()->user()->sucursal_id)
-                          ->firstOrFail();
-    
+            ->where('user_id', auth()->id())
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->firstOrFail();
+
         if ($cliente->identificacion) {
             Storage::disk('public')->delete('identificaciones/' . $cliente->identificacion);
         }
-    
+
         $cliente->delete();
 
         return redirect()->route('clientes.index')->with('success', 'Cliente eliminado exitosamente.');
     }
 }
+

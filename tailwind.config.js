@@ -5,10 +5,10 @@ module.exports = {
         "./resources/**/*.blade.php",
         "./resources/**/*.js",
         "./resources/**/*.vue",
+        "./node_modules/flowbite/**/*.js",
         "*.{js,ts,jsx,tsx,mdx}",
         "app/**/*.{ts,tsx}",
         "components/**/*.{ts,tsx}",
-        "./node_modules/flowbite/**/*.js",
     ],
     theme: {
         extend: {
@@ -46,20 +46,6 @@ module.exports = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
-                blue: {
-                    500: "#3498db",
-                    600: "#2980b9",
-                    700: "#2c3e50",
-                },
-                gray: {
-                    100: "#f4f4f4",
-                    700: "#2c3e50",
-                    800: "#2c3e50",
-                },
-                red: {
-                    600: "#e74c3c",
-                    700: "#c0392b",
-                },
             },
             borderRadius: {
                 lg: "var(--radius)",
@@ -68,8 +54,6 @@ module.exports = {
             },
         },
     },
-    plugins: [
-        require("flowbite/plugin"), // Añadir esta línea
-    ],
+    plugins: [require("flowbite/plugin"), require("tailwindcss-animate")],
 }
 

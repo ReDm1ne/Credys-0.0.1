@@ -1,346 +1,109 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-gray-100">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Credys')</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @yield('styles')
 </head>
-<body class="h-full">
-<div class="min-h-full">
-    <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
-    <div id="mobile-menu" class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-900/80"></div>
+<body class="h-full bg-gray-100">
+<div class="flex h-screen overflow-hidden">
+    @include('components.sidebar.flowbite-sidebar')
 
-        <div class="fixed inset-0 flex">
-            <div class="relative mr-16 flex w-full max-w-xs flex-1">
-                <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
-                    <button id="close-sidebar-button" type="button" class="-m-2.5 p-2.5">
-                        <span class="sr-only">Close sidebar</span>
-                        <i class="fas fa-times text-white text-2xl" aria-hidden="true"></i>
+    <div class="flex flex-col flex-1 overflow-hidden">
+        <header class="bg-white shadow-sm z-10">
+            <div class="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 lg:px-6">
+                <div class="flex items-center">
+                    <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 mr-2">
+                        <span class="sr-only">Abrir menú</span>
+                        <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
+                        </svg>
                     </button>
+                    <!-- Título con margen izquierdo para que sea visible en pantallas grandes -->
+                    <h1 class="text-lg font-semibold text-gray-900 truncate sm:text-xl sm:ml-0 md:ml-64">@yield('header_title', 'Dashboard')</h1>
                 </div>
-
-                <!-- Sidebar component -->
-                <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10">
-                    <div class="flex h-16 shrink-0 items-center">
-                        <img class="h-8 w-auto" src="https://www.chainfinance.com/wp-content/uploads/2022/07/logo_credys.png" alt="Credys Logo">
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <!-- Centro de notificaciones -->
+                    <div class="relative">
+                        <button class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <!-- Indicador de notificaciones -->
+                            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                        </button>
                     </div>
-                    <nav class="flex flex-1 flex-col">
-                        <ul role="list" class="flex flex-1 flex-col gap-y-7">
-                            <li>
-                                <ul role="list" class="-mx-2 space-y-1">
-                                    <li>
-                                        <a href="#" class="bg-gray-800 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-home text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Inicio
-                                        </a>
-                                    </li>
-                                    <li class="sidebar-dropdown">
-                                        <button type="button" class="sidebar-dropdown-toggle flex w-full text-left text-gray-400 hover:text-white hover:bg-gray-800 gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-chart-bar text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Resumen del día
-                                            <i class="fas fa-chevron-down ml-auto h-5 w-5 shrink-0 transition-transform"></i>
-                                        </button>
-                                        <ul class="sidebar-submenu mt-1 px-2 hidden">
-                                            <li>
-                                                <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Ventas diarias</a>
-                                            </li>
-                                            <li>
-                                                <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Créditos otorgados</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-building text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Sucursales
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <div class="text-xs font-semibold leading-6 text-gray-400">Administración</div>
-                                <ul role="list" class="-mx-2 mt-2 space-y-1">
-                                    <li class="sidebar-dropdown">
-                                        <button type="button" class="sidebar-dropdown-toggle flex w-full text-left text-gray-400 hover:text-white hover:bg-gray-800 gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-users text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Clientes
-                                            <i class="fas fa-chevron-down ml-auto h-5 w-5 shrink-0 transition-transform"></i>
-                                        </button>
-                                        <ul class="sidebar-submenu mt-1 px-2 hidden">
-                                            <li>
-                                                <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Lista de clientes</a>
-                                            </li>
-                                            <li>
-                                                <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Nuevo cliente</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="sidebar-dropdown">
-                                        <button type="button" class="sidebar-dropdown-toggle flex w-full text-left text-gray-400 hover:text-white hover:bg-gray-800 gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-credit-card text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Créditos
-                                            <i class="fas fa-chevron-down ml-auto h-5 w-5 shrink-0 transition-transform"></i>
-                                        </button>
-                                        <ul class="sidebar-submenu mt-1 px-2 hidden">
-                                            <li>
-                                                <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Solicitudes</a>
-                                            </li>
-                                            <li>
-                                                <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Aprobados</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-user-tie text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Empleados
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-route text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Rutas
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-sitemap text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Gerencias
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <div class="text-xs font-semibold leading-6 text-gray-400">Reportes y Gestión</div>
-                                <ul role="list" class="-mx-2 mt-2 space-y-1">
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-file-alt text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Reportes
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-tasks text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Gestión de cobranza
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-calendar-alt text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Agenda
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                            <i class="fas fa-calculator text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                            Contabilidad
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="mt-auto">
-                                <a href="#" class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white">
-                                    <i class="fas fa-cog text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Configuración
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <!-- Avatar del usuario con menú desplegable -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-full">
+                            <img class="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover border-2 border-gray-200" src="{{ Auth::user()->avatar ?? 'https://www.gravatar.com/avatar/' . md5(strtolower(trim(Auth::user()->email))) . '?s=200&d=mp' }}" alt="{{ Auth::user()->name }}">
+                            <span class="ml-2 hidden md:block">{{ Auth::user()->name }}</span>
+                            <svg class="ml-1 h-5 w-5 text-gray-400 hidden md:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
 
-    <!-- Static sidebar for desktop -->
-    <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-        <!-- Sidebar component -->
-        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
-            <div class="flex h-16 shrink-0 items-center">
-                <img class="h-8 w-auto" src="https://www.chainfinance.com/wp-content/uploads/2022/07/logo_credys.png" alt="Credys Logo">
-            </div>
-            <nav class="flex flex-1 flex-col">
-                <ul role="list" class="flex flex-1 flex-col gap-y-7">
-                    <li>
-                        <ul role="list" class="-mx-2 space-y-1">
-                            <li>
-                                <a href="#" class="bg-gray-800 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-home text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Inicio
-                                </a>
-                            </li>
-                            <li class="sidebar-dropdown">
-                                <button type="button" class="sidebar-dropdown-toggle flex w-full text-left text-gray-400 hover:text-white hover:bg-gray-800 gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-chart-bar text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Resumen del día
-                                    <i class="fas fa-chevron-down ml-auto h-5 w-5 shrink-0 transition-transform"></i>
-                                </button>
-                                <ul class="sidebar-submenu mt-1 px-2 hidden">
-                                    <li>
-                                        <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Ventas diarias</a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Créditos otorgados</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-building text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Sucursales
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <div class="text-xs font-semibold leading-6 text-gray-400">Administración</div>
-                        <ul role="list" class="-mx-2 mt-2 space-y-1">
-                            <li class="sidebar-dropdown">
-                                <button type="button" class="sidebar-dropdown-toggle flex w-full text-left text-gray-400 hover:text-white hover:bg-gray-800 gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-users text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Clientes
-                                    <i class="fas fa-chevron-down ml-auto h-5 w-5 shrink-0 transition-transform"></i>
-                                </button>
-                                <ul class="sidebar-submenu mt-1 px-2 hidden">
-                                    <li>
-                                        <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Lista de clientes</a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Nuevo cliente</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="sidebar-dropdown">
-                                <button type="button" class="sidebar-dropdown-toggle flex w-full text-left text-gray-400 hover:text-white hover:bg-gray-800 gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-credit-card text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Créditos
-                                    <i class="fas fa-chevron-down ml-auto h-5 w-5 shrink-0 transition-transform"></i>
-                                </button>
-                                <ul class="sidebar-submenu mt-1 px-2 hidden">
-                                    <li>
-                                        <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Solicitudes</a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-400 hover:text-white hover:bg-gray-800">Aprobados</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-user-tie text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Empleados
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-route text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Rutas
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-sitemap text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Gerencias
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <div class="text-xs font-semibold leading-6 text-gray-400">Reportes y Gestión</div>
-                        <ul role="list" class="-mx-2 mt-2 space-y-1">
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-file-alt text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Reportes
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-tasks text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Gestión de cobranza
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-calendar-alt text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Agenda
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                                    <i class="fas fa-calculator text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                                    Contabilidad
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="mt-auto">
-                        <a href="#" class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white">
-                            <i class="fas fa-cog text-gray-400 group-hover:text-white h-6 w-6 shrink-0" aria-hidden="true"></i>
-                            Configuración
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-
-    <div class="lg:pl-72">
-        <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-            <button id="open-sidebar-button" type="button" class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
-                <span class="sr-only">Open sidebar</span>
-                <i class="fas fa-bars h-6 w-6" aria-hidden="true"></i>
-            </button>
-
-            <!-- Separator -->
-            <div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
-
-            <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-                <div class="flex items-center gap-x-4 lg:gap-x-6">
-                    <!-- View Title -->
-                    <h2 class="text-2xl font-semibold text-gray-900">@yield('view_title', 'Sucursales | Lista de Sucursales')</h2>
-                </div>
-
-                <!-- Profile dropdown -->
-                <div class="relative ml-auto flex items-center">
-                    <button type="button" class="flex items-center gap-x-4 text-sm font-semibold leading-6 text-gray-900" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-                        <span class="sr-only">Open user menu</span>
-                        <img class="h-8 w-8 rounded-full bg-gray-50" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
-                        <span class="hidden lg:flex lg:items-center">
-                                {{ Auth::user()->name }}
-                                <i class="fas fa-chevron-down ml-2 h-5 w-5 text-gray-400" aria-hidden="true"></i>
-                            </span>
-                    </button>
-
-                    <!-- User menu dropdown -->
-                    <div id="user-menu" class="hidden absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-                        <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-0">Your Profile</a>
-                        <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-1">Settings</a>
-                        <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-2" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Sign out</a>
+                        <!-- Menú desplegable del usuario -->
+                        <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95">
+                            <div class="px-4 py-3">
+                                <p class="text-sm text-gray-900">{{ Auth::user()->name }}</p>
+                                <p class="text-sm text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                            </div>
+                            <div class="py-1">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi perfil</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</a>
+                            </div>
+                            <div class="py-1">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                        Cerrar sesión
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <main class="py-10">
-            <div class="px-4 sm:px-6 lg:px-8">
-                <!-- Main content -->
-                @yield('content')
-            </div>
+        </header>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-3 sm:p-4 md:p-6 sm:ml-0 md:ml-64 transition-all duration-300">
+            @yield('content')
         </main>
     </div>
 </div>
 
 @livewireScripts
+<!-- Alpine.js para el menú desplegable -->
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+    // Función para resaltar el elemento activo del menú basado en la URL actual
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtener la ruta actual
+        const currentPath = window.location.pathname;
+
+        // Función para verificar si una cadena comienza con un patrón
+        function startsWith(str, pattern) {
+            return str.indexOf(pattern) === 0;
+        }
+
+        // Resaltar el elemento del menú correspondiente
+        const menuItems = document.querySelectorAll('#logo-sidebar a');
+        menuItems.forEach(item => {
+            const href = item.getAttribute('href');
+            if (href && href !== '#') {
+                const route = href.split('//').pop().split('/').slice(1).join('/');
+                if (startsWith(currentPath, '/' + route.split('/')[0])) {
+                    item.classList.add('active-menu-item');
+                }
+            }
+        });
+    });
+</script>
 @yield('scripts')
-<script src="{{ asset('js/principal.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
 </body>
 </html>
 
