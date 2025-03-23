@@ -78,7 +78,12 @@
 
 @livewireScripts
 <!-- Alpine.js para el menú desplegable -->
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+    // Solo cargar Alpine.js si no está ya definido por Livewire
+    if (typeof window.Alpine === 'undefined') {
+        document.write('<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"><\/script>');
+    }
+</script>
 <script>
     // Función para resaltar el elemento activo del menú basado en la URL actual
     document.addEventListener('DOMContentLoaded', function() {

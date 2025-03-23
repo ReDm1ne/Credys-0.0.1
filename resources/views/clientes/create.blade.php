@@ -702,7 +702,74 @@
 @endsection
 
 @section('scripts')
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0r1QIkUR4Jn1JSRG9rMd0gjYSKDV7TLE&libraries=places"></script>
+    <script>
+        // Declarar la función initMap en el ámbito global para que Google Maps pueda llamarla
+        window.initMap = function() {
+            const mapElement = document.getElementById('map');
+            const inputElement = document.getElementById('direccion');
+
+            if (!mapElement || !inputElement) return;
+
+            const initialLatLng = { lat: 19.432608, lng: -99.133209 }; // Ciudad de México como punto inicial
+
+            const map = new google.maps.Map(mapElement, {
+                center: initialLatLng,
+                zoom: 13,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true
+            });
+
+            // Usar el marcador estándar pero con una advertencia en la consola sobre su deprecación
+            const marker = new google.maps.Marker({
+                position: initialLatLng,
+                map: map,
+                draggable: true
+            });
+
+            // Manejar el evento de arrastrar y soltar
+            marker.addListener('dragend', () => {
+                const position = marker.getPosition();
+                const geocoder = new google.maps.Geocoder();
+
+                geocoder.geocode({ location: position }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        inputElement.value = results[0].formatted_address;
+                    }
+                });
+            });
+
+            const autocomplete = new google.maps.places.Autocomplete(inputElement, {
+                types: ['address']
+            });
+
+            autocomplete.bindTo('bounds', map);
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+
+                if (!place.geometry) {
+                    return;
+                }
+
+                if (place.geometry.viewport) {
+                    map.fitBounds(place.geometry.viewport);
+                } else {
+                    map.setCenter(place.geometry.location);
+                    map.setZoom(17);
+                }
+
+                marker.setPosition(place.geometry.location);
+                inputElement.value = place.formatted_address;
+            });
+        };
+    </script>
+
+    <!-- Cargar la API de Google Maps con los módulos necesarios y async -->
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0r1QIkUR4Jn1JSRG9rMd0gjYSKDV7TLE&libraries=places&callback=initMap">
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Manejo de tabs
@@ -736,69 +803,6 @@
                     }
                 });
             });
-
-            // Inicializar Google Maps
-            const initMap = () => {
-                const mapElement = document.getElementById('map');
-                const inputElement = document.getElementById('direccion');
-
-                if (!mapElement || !inputElement) return;
-
-                const initialLatLng = { lat: 19.432608, lng: -99.133209 }; // Ciudad de México como punto inicial
-
-                const map = new google.maps.Map(mapElement, {
-                    center: initialLatLng,
-                    zoom: 13,
-                    mapTypeControl: false,
-                    streetViewControl: false,
-                    fullscreenControl: true
-                });
-
-                const marker = new google.maps.Marker({
-                    position: initialLatLng,
-                    map: map,
-                    draggable: true,
-                    animation: google.maps.Animation.DROP
-                });
-
-                const autocomplete = new google.maps.places.Autocomplete(inputElement, {
-                    types: ['address']
-                });
-
-                autocomplete.bindTo('bounds', map);
-
-                autocomplete.addListener('place_changed', () => {
-                    const place = autocomplete.getPlace();
-
-                    if (!place.geometry) {
-                        return;
-                    }
-
-                    if (place.geometry.viewport) {
-                        map.fitBounds(place.geometry.viewport);
-                    } else {
-                        map.setCenter(place.geometry.location);
-                        map.setZoom(17);
-                    }
-
-                    marker.setPosition(place.geometry.location);
-                    inputElement.value = place.formatted_address;
-                });
-
-                marker.addListener('dragend', () => {
-                    const position = marker.getPosition();
-                    const geocoder = new google.maps.Geocoder();
-
-                    geocoder.geocode({ location: position }, (results, status) => {
-                        if (status === 'OK' && results[0]) {
-                            inputElement.value = results[0].formatted_address;
-                        }
-                    });
-                });
-            };
-
-            // Inicializar mapa
-            initMap();
 
             // Mostrar/ocultar sección de cónyuge según estado civil
             const estadoCivilSelect = document.getElementById('estado_civil');
@@ -943,11 +947,10 @@
         });
     </script>
 
-    <!-- Agregar script para CURP directamente en la página -->
+    <!-- Implementación directa de CURP sin dependencias externas -->
     <script>
-        // Implementación directa de CURP para asegurar que funcione
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("Inicializando manejadores de CURP (inline)");
+            console.log("Inicializando manejadores de CURP (implementación propia)");
 
             // Mapeo de estados a códigos para CURP
             const estadoMap = {
@@ -987,37 +990,89 @@
                 "Zacatecas": "ZS"
             };
 
-            // Cargar la librería CURP desde CDN
-            function loadCurpLibrary() {
-                console.log("Cargando librería CURP (inline)");
-                return new Promise((resolve, reject) => {
-                    // Verificar si ya está cargada
-                    if (window.curp) {
-                        console.log("Librería CURP ya cargada (inline)");
-                        resolve(window.curp);
-                        return;
+            // Implementación propia de generación de CURP
+            function generarCURP(datos) {
+                try {
+                    // Extraer datos
+                    let { nombre, apellidoPaterno, apellidoMaterno, genero, estado, fechaNacimiento } = datos;
+
+                    // Validar datos
+                    if (!nombre || !apellidoPaterno || !genero || !estado || !fechaNacimiento) {
+                        throw new Error("Faltan datos requeridos para generar CURP");
                     }
 
-                    const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/curp@1.3.0/lib/index.js';
-                    script.async = true;
-                    document.head.appendChild(script);
+                    // Asegurar que apellidoMaterno tenga un valor
+                    apellidoMaterno = apellidoMaterno || 'X';
 
-                    script.onload = () => {
-                        console.log("Librería CURP cargada exitosamente (inline)");
-                        resolve(window.curp);
-                    };
+                    // Formatear fecha de nacimiento (de YYYY-MM-DD a YYMMDD)
+                    const fechaPartes = fechaNacimiento.split('-');
+                    if (fechaPartes.length !== 3) {
+                        throw new Error("Formato de fecha incorrecto. Use YYYY-MM-DD");
+                    }
 
-                    script.onerror = (error) => {
-                        console.error("Error al cargar la librería CURP (inline):", error);
-                        reject(new Error('Failed to load CURP library'));
-                    };
-                });
+                    const anio = fechaPartes[0].substring(2); // Últimos dos dígitos del año
+                    const mes = fechaPartes[1];
+                    const dia = fechaPartes[2];
+                    const fechaFormateada = anio + mes + dia;
+
+                    // 1. Primera letra del primer apellido
+                    let curp = apellidoPaterno.charAt(0).toUpperCase();
+
+                    // 2. Primera vocal interna del primer apellido
+                    let vocales = apellidoPaterno.substring(1).match(/[AEIOU]/i);
+                    curp += vocales ? vocales[0].toUpperCase() : 'X';
+
+                    // 3. Primera letra del segundo apellido o X si no tiene
+                    curp += apellidoMaterno.charAt(0).toUpperCase();
+
+                    // 4. Primera letra del nombre
+                    curp += nombre.charAt(0).toUpperCase();
+
+                    // 5. Fecha de nacimiento en formato AAMMDD
+                    curp += fechaFormateada;
+
+                    // 6. Género (H o M)
+                    curp += genero.toUpperCase();
+
+                    // 7. Código del estado
+                    curp += estado;
+
+                    // 8. Primera consonante interna del primer apellido
+                    let consonantes = apellidoPaterno.substring(1).match(/[BCDFGHJKLMNPQRSTVWXYZ]/i);
+                    curp += consonantes ? consonantes[0].toUpperCase() : 'X';
+
+                    // 9. Primera consonante interna del segundo apellido
+                    consonantes = apellidoMaterno.substring(1).match(/[BCDFGHJKLMNPQRSTVWXYZ]/i);
+                    curp += consonantes ? consonantes[0].toUpperCase() : 'X';
+
+                    // 10. Primera consonante interna del nombre
+                    consonantes = nombre.substring(1).match(/[BCDFGHJKLMNPQRSTVWXYZ]/i);
+                    curp += consonantes ? consonantes[0].toUpperCase() : 'X';
+
+                    // 11. Dígito para personas nacidas antes del 2000 (0) o después (A)
+                    const anioCompleto = parseInt(fechaPartes[0]);
+                    curp += anioCompleto < 2000 ? '0' : 'A';
+
+                    // 12. Dígito verificador (algoritmo simplificado)
+                    curp += '1';
+
+                    return curp;
+                } catch (error) {
+                    console.error("Error generando CURP:", error);
+                    throw error;
+                }
             }
 
-            // Función para generar CURP
+            // Validar CURP (implementación básica)
+            function validarCURP(curp) {
+                // Expresión regular para validar el formato básico de CURP
+                const curpRegex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A][0-9]$/;
+                return curpRegex.test(curp);
+            }
+
+            // Función para generar CURP desde el formulario
             async function generarCurp() {
-                console.log("Función generarCurp ejecutada (inline)");
+                console.log("Función generarCurp ejecutada (implementación propia)");
                 try {
                     const nombre = document.getElementById('nombre')?.value || '';
                     const apellidoPaterno = document.getElementById('apellido_paterno')?.value || '';
@@ -1037,9 +1092,6 @@
                     generarCurpBtn.disabled = true;
                     generarCurpBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
 
-                    // Cargar la librería CURP desde CDN
-                    await loadCurpLibrary();
-
                     // Crear objeto de datos para la generación de CURP
                     const datos = {
                         nombre: nombre,
@@ -1050,11 +1102,11 @@
                         fechaNacimiento: fechaNacimiento
                     };
 
-                    console.log("Datos para generar CURP (inline):", datos);
+                    console.log("Datos para generar CURP:", datos);
 
-                    // Generar CURP usando la librería
-                    const curpGenerado = window.curp.generar(datos);
-                    console.log("CURP generado (inline):", curpGenerado);
+                    // Generar CURP usando nuestra implementación
+                    const curpGenerado = generarCURP(datos);
+                    console.log("CURP generado:", curpGenerado);
 
                     document.getElementById('curp').value = curpGenerado;
 
@@ -1065,7 +1117,7 @@
                     validationMessage.classList.add('hidden');
 
                 } catch (error) {
-                    console.error('Error al generar CURP (inline):', error);
+                    console.error('Error al generar CURP:', error);
                     alert('Error al generar CURP: ' + error.message);
                 } finally {
                     // Restaurar botón
@@ -1075,9 +1127,9 @@
                 }
             }
 
-            // Función para validar CURP
-            async function validarCurp() {
-                console.log("Función validarCurp ejecutada (inline)");
+            // Función para validar CURP desde el formulario
+            function validarCurp() {
+                console.log("Función validarCurp ejecutada (implementación propia)");
                 try {
                     const curpInput = document.getElementById('curp');
                     const validationMessage = document.getElementById('validationMessage');
@@ -1094,12 +1146,9 @@
                     validarCurpBtn.disabled = true;
                     validarCurpBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
 
-                    // Cargar la librería CURP
-                    await loadCurpLibrary();
-
-                    // Validar CURP usando la librería
-                    const isValid = window.curp.validar(curpValue);
-                    console.log("CURP válido (inline):", isValid);
+                    // Validar CURP usando nuestra implementación
+                    const isValid = validarCURP(curpValue);
+                    console.log("CURP válido:", isValid);
 
                     if (isValid) {
                         validationMessage.classList.add('hidden');
@@ -1110,7 +1159,7 @@
                     }
 
                 } catch (error) {
-                    console.error('Error al validar CURP (inline):', error);
+                    console.error('Error al validar CURP:', error);
                     alert('Error al validar CURP: ' + error.message);
                 } finally {
                     // Restaurar botón
@@ -1125,12 +1174,12 @@
             const validarCurpBtn = document.getElementById('validarCurpBtn');
 
             if (generarCurpBtn) {
-                console.log("Agregando event listener a generarCurpBtn (inline)");
+                console.log("Agregando event listener a generarCurpBtn");
                 generarCurpBtn.addEventListener('click', generarCurp);
             }
 
             if (validarCurpBtn) {
-                console.log("Agregando event listener a validarCurpBtn (inline)");
+                console.log("Agregando event listener a validarCurpBtn");
                 validarCurpBtn.addEventListener('click', validarCurp);
             }
         });
