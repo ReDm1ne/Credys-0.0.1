@@ -1,5 +1,6 @@
 /**
- * CURP Handler - Funciones para generar y validar CURP
+ * CURP Manager
+ * Maneja la generación y validación de CURP sin dependencias externas
  */
 
 // Mapeo de estados a códigos para CURP
@@ -39,6 +40,9 @@ const estadoMap = {
     Yucatán: "YN",
     Zacatecas: "ZS",
 }
+
+// Variable para controlar si ya se inicializó
+let initialized = false
 
 // Implementación propia de generación de CURP
 function generarCURP(datos) {
@@ -113,38 +117,60 @@ function generarCURP(datos) {
     }
 }
 
-// Validar CURP (implementación básica)
+// Validar CURP (implementación mejorada)
 function validarCURP(curp) {
     // Expresión regular para validar el formato básico de CURP
     const curpRegex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A][0-9]$/
-    return curpRegex.test(curp)
-}
 
-// Inicializar manejadores de CURP
-function initCurpHandler() {
-    console.log("Inicializando manejadores de CURP")
-
-    const generarCurpBtn = document.getElementById("generarCurpBtn")
-    const validarCurpBtn = document.getElementById("validarCurpBtn")
-
-    if (generarCurpBtn) {
-        console.log("Botón generar CURP encontrado, agregando event listener")
-        generarCurpBtn.addEventListener("click", generarCurp)
-    } else {
-        console.warn("Botón generar CURP no encontrado")
+    if (!curpRegex.test(curp)) {
+        return false
     }
 
-    if (validarCurpBtn) {
-        console.log("Botón validar CURP encontrado, agregando event listener")
-        validarCurpBtn.addEventListener("click", validarCurp)
-    } else {
-        console.warn("Botón validar CURP no encontrado")
+    // Validaciones adicionales
+    // 1. Verificar que la fecha sea válida
+    const anio = Number.parseInt(curp.substring(4, 6))
+    const mes = Number.parseInt(curp.substring(6, 8))
+    const dia = Number.parseInt(curp.substring(8, 10))
+
+    // Determinar el siglo (19xx o 20xx)
+    const siglo = curp.charAt(16) === "0" ? 1900 : 2000
+    const anioCompleto = siglo + anio
+
+    // Validar fecha
+    if (mes < 1 || mes > 12) return false
+
+    // Días por mes (considerando años bisiestos)
+    const diasPorMes = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    if ((anioCompleto % 4 === 0 && anioCompleto % 100 !== 0) || anioCompleto % 400 === 0) {
+        diasPorMes[2] = 29 // Febrero en año bisiesto
+    }
+
+    if (dia < 1 || dia > diasPorMes[mes]) return false
+
+    // 2. Verificar que el código de estado sea válido
+    const estadoCodigo = curp.substring(11, 13)
+    const estadosValidos = Object.values(estadoMap)
+    if (!estadosValidos.includes(estadoCodigo)) return false
+
+    // Si pasa todas las validaciones
+    return true
+}
+
+// Función para verificar si la CURP ya existe en la misma sucursal
+async function verificarCURPUnica(curp) {
+    try {
+        const response = await fetch(`/api/verificar-curp?curp=${curp}`)
+        const data = await response.json()
+        return data.disponible
+    } catch (error) {
+        console.error("Error verificando CURP:", error)
+        return true // En caso de error, permitir continuar
     }
 }
 
-// Función para generar CURP
-async function generarCurp() {
-    console.log("Función generarCurp ejecutada")
+// Función para generar CURP desde el formulario
+async function generarCurpHandler() {
+    console.log("Función generarCurp ejecutada (implementación propia)")
     try {
         const nombre = document.getElementById("nombre")?.value || ""
         const apellidoPaterno = document.getElementById("apellido_paterno")?.value || ""
@@ -185,11 +211,26 @@ async function generarCurp() {
 
         document.getElementById("curp").value = curpGenerado
 
-        // Mostrar mensaje de éxito
+        // Validar la CURP generada
+        const esValida = validarCURP(curpGenerado)
         const validationSuccessMessage = document.getElementById("validationSuccessMessage")
         const validationMessage = document.getElementById("validationMessage")
-        validationSuccessMessage.classList.remove("hidden")
-        validationMessage.classList.add("hidden")
+
+        if (esValida) {
+            validationSuccessMessage.classList.remove("hidden")
+            validationMessage.classList.add("hidden")
+
+            // Verificar si la CURP ya existe en la misma sucursal
+            const esCURPUnica = await verificarCURPUnica(curpGenerado)
+            if (!esCURPUnica) {
+                validationSuccessMessage.classList.add("hidden")
+                validationMessage.textContent = "Esta CURP ya existe en esta sucursal"
+                validationMessage.classList.remove("hidden")
+            }
+        } else {
+            validationSuccessMessage.classList.add("hidden")
+            validationMessage.classList.remove("hidden")
+        }
     } catch (error) {
         console.error("Error al generar CURP:", error)
         alert("Error al generar CURP: " + error.message)
@@ -201,9 +242,9 @@ async function generarCurp() {
     }
 }
 
-// Función para validar CURP
-async function validarCurp() {
-    console.log("Función validarCurp ejecutada")
+// Función para validar CURP desde el formulario
+async function validarCurpHandler() {
+    console.log("Función validarCurp ejecutada (implementación propia)")
     try {
         const curpInput = document.getElementById("curp")
         const validationMessage = document.getElementById("validationMessage")
@@ -226,9 +267,20 @@ async function validarCurp() {
         console.log("CURP válido:", isValid)
 
         if (isValid) {
-            validationMessage.classList.add("hidden")
-            validationSuccessMessage.classList.remove("hidden")
+            // Verificar si la CURP ya existe en la misma sucursal
+            const esCURPUnica = await verificarCURPUnica(curpValue)
+
+            if (esCURPUnica) {
+                validationMessage.classList.add("hidden")
+                validationSuccessMessage.classList.remove("hidden")
+                validationSuccessMessage.textContent = "CURP válido"
+            } else {
+                validationMessage.textContent = "Esta CURP ya existe en esta sucursal"
+                validationMessage.classList.remove("hidden")
+                validationSuccessMessage.classList.add("hidden")
+            }
         } else {
+            validationMessage.textContent = "CURP no válido"
             validationMessage.classList.remove("hidden")
             validationSuccessMessage.classList.add("hidden")
         }
@@ -243,6 +295,84 @@ async function validarCurp() {
     }
 }
 
-// Exportar funciones
-export { initCurpHandler, generarCurp, validarCurp }
+// Inicializar manejadores de CURP
+function initCurpManager() {
+    // Evitar inicialización múltiple
+    if (initialized) return
+
+    console.log("Inicializando manejadores de CURP (implementación propia)")
+
+    // Agregar event listeners a los botones
+    const generarCurpBtn = document.getElementById("generarCurpBtn")
+    const validarCurpBtn = document.getElementById("validarCurpBtn")
+    const curpInput = document.getElementById("curp")
+    const tabButtons = document.querySelectorAll(".tab-btn")
+
+    if (generarCurpBtn) {
+        console.log("Agregando event listener a generarCurpBtn")
+        // Eliminar event listeners anteriores
+        generarCurpBtn.removeEventListener("click", generarCurpHandler)
+        // Agregar nuevo event listener
+        generarCurpBtn.addEventListener("click", generarCurpHandler)
+    }
+
+    if (validarCurpBtn) {
+        console.log("Agregando event listener a validarCurpBtn")
+        // Eliminar event listeners anteriores
+        validarCurpBtn.removeEventListener("click", validarCurpHandler)
+        // Agregar nuevo event listener
+        validarCurpBtn.addEventListener("click", validarCurpHandler)
+    }
+
+    // Validar CURP antes de cambiar de pestaña
+    if (tabButtons.length && curpInput) {
+        tabButtons.forEach((button) => {
+            if (button.getAttribute("data-tab") !== "general") {
+                button.addEventListener("click", (e) => {
+                    const curpValue = curpInput.value.trim()
+                    if (!curpValue || !validarCURP(curpValue)) {
+                        e.preventDefault()
+                        alert("Por favor ingrese una CURP válida antes de continuar.")
+                        return false
+                    }
+
+                    // Verificar si la CURP ya existe en la misma sucursal
+                    verificarCURPUnica(curpValue).then((esCURPUnica) => {
+                        if (!esCURPUnica) {
+                            e.preventDefault()
+                            alert("Esta CURP ya existe en esta sucursal. No puede continuar.")
+                            return false
+                        }
+                    })
+                })
+            }
+        })
+    }
+
+    // Validar CURP al enviar el formulario
+    const form = document.querySelector("form")
+    if (form && curpInput) {
+        form.addEventListener("submit", (e) => {
+            const curpValue = curpInput.value.trim()
+            if (!curpValue || !validarCURP(curpValue)) {
+                e.preventDefault()
+                alert("Por favor ingrese una CURP válida antes de enviar el formulario.")
+                return false
+            }
+        })
+    }
+
+    initialized = true
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener("DOMContentLoaded", () => {
+    // Solo inicializar si estamos en la página correcta
+    if (document.getElementById("curp")) {
+        initCurpManager()
+    }
+})
+
+// Exportar funciones para uso externo
+export { initCurpManager, generarCURP, validarCURP, verificarCURPUnica }
 

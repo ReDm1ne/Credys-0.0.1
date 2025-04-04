@@ -7,6 +7,7 @@ use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\EmpleadoController;
+use App\Http\Controllers\TipoTrabajoController;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -43,4 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('empleados', EmpleadoController::class);
     });
+
+    // Rutas para tipos de trabajo sin restricción de rol para pruebas
+    Route::resource('tipos-trabajo', TipoTrabajoController::class);
+    Route::get('/api/tipos-trabajo', [TipoTrabajoController::class, 'getActiveTiposTrabajo'])->name('api.tipos-trabajo');
 });
+

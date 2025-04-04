@@ -59,6 +59,18 @@
                         </svg>
                         Información Financiera
                     </button>
+                    <button type="button" class="tab-btn inline-flex items-center h-10 px-4 py-2 text-sm font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="laboral">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Información Laboral
+                    </button>
+                    <button type="button" class="tab-btn inline-flex items-center h-10 px-4 py-2 text-sm font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="documentacion">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Documentación Digital
+                    </button>
                 </nav>
             </div>
 
@@ -104,21 +116,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-span-1">
-                            <label for="telefono_oficina" class="block text-sm font-medium text-gray-700 mb-1">Teléfono Oficina <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                    </svg>
-                                </div>
-                                <input type="tel" id="telefono_oficina" name="telefono_oficina" value="{{ old('telefono_oficina') }}" required pattern="[0-9]{10}"
-                                       class="w-full pl-10 px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            @error('telefono_oficina')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+
 
                         <div class="col-span-1">
                             <label for="telefono_particular" class="block text-sm font-medium text-gray-700 mb-1">Teléfono Particular <span class="text-red-500">*</span></label>
@@ -277,6 +275,24 @@
                                     <input type="text" id="conyuge_direccion_trabajo" name="conyuge_direccion_trabajo" value="{{ old('conyuge_direccion_trabajo') }}"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     @error('conyuge_direccion_trabajo')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="conyuge_foto" class="block text-sm font-medium text-gray-700 mb-1">Foto del Cónyuge</label>
+                                    <input type="file" id="conyuge_foto" name="conyuge_foto" accept="image/*"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG.</p>
+                                    @error('conyuge_foto')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="conyuge_identificacion" class="block text-sm font-medium text-gray-700 mb-1">Identificación del Cónyuge</label>
+                                    <input type="file" id="conyuge_identificacion" name="conyuge_identificacion" accept="image/*"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG.</p>
+                                    @error('conyuge_identificacion')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -682,6 +698,261 @@
                     </div>
                 </div>
 
+                <!-- Tab: Información Laboral -->
+                <div id="laboral" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="col-span-1 md:col-span-2">
+                            <h4 class="text-md font-medium text-gray-900 mb-3">Información Laboral</h4>
+                        </div>
+
+
+                        <div class="col-span-1">
+                            <label for="tipo_de_trabajo" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Trabajo <span class="text-red-500">*</span></label>
+                            <div class="flex">
+                                <select id="tipo_de_trabajo" name="tipo_de_trabajo" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-l-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Seleccione tipo de trabajo</option>
+                                    @foreach($tiposTrabajo as $tipo)
+                                        <option value="{{ $tipo->nombre }}" {{ old('tipo_de_trabajo') === $tipo->nombre ? 'selected' : '' }}>{{ $tipo->nombre }}</option>
+                                    @endforeach
+                                </select>
+                                <!-- Modificar el botón de gestionar tipos de trabajo para asegurarse de que tenga type="button" -->
+                                <button type="button" id="gestionarTiposTrabajoBtn"
+                                        class="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-r-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @error('tipo_de_trabajo')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="nombre_de_la_empresa" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Empresa <span class="text-red-500">*</span></label>
+                            <input type="text" id="nombre_de_la_empresa" name="nombre_de_la_empresa" value="{{ old('nombre_de_la_empresa') }}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            @error('nombre_de_la_empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="rfc_de_la_empresa" class="block text-sm font-medium text-gray-700 mb-1">RFC de la Empresa</label>
+                            <input type="text" id="rfc_de_la_empresa" name="rfc_de_la_empresa" value="{{ old('rfc_de_la_empresa') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            @error('rfc_de_la_empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="telefono_empresa" class="block text-sm font-medium text-gray-700 mb-1">Teléfono de la Empresa</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                </div>
+                                <input type="tel" id="telefono_empresa" name="telefono_empresa" value="{{ old('telefono_empresa') }}" pattern="[0-9]{10}"
+                                       class="w-full pl-10 px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            @error('telefono_empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1 md:col-span-2">
+                            <label for="direccion_de_la_empresa" class="block text-sm font-medium text-gray-700 mb-1">Dirección de la Empresa <span class="text-red-500">*</span></label>
+                            <input type="text" id="direccion_de_la_empresa" name="direccion_de_la_empresa" value="{{ old('direccion_de_la_empresa') }}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            @error('direccion_de_la_empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1 md:col-span-2">
+                            <label for="referencia_de_la_empresa" class="block text-sm font-medium text-gray-700 mb-1">Referencia de la Empresa</label>
+                            <textarea id="referencia_de_la_empresa" name="referencia_de_la_empresa" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">{{ old('referencia_de_la_empresa') }}</textarea>
+                            @error('referencia_de_la_empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Documentación Digital -->
+
+                <div id="documentacion" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="col-span-1 md:col-span-2">
+                            <h4 class="text-md font-medium text-gray-900 mb-3">Documentación Digital del Cliente</h4>
+                            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-blue-700">
+                                            <strong>¡No te preocupes por el tamaño de las imágenes!</strong> El sistema optimizará automáticamente las fotos que subas, manteniendo una buena calidad pero reduciendo su tamaño.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="foto_cliente" class="block text-sm font-medium text-gray-700 mb-1">Fotografía del Cliente</label>
+                            <input type="file" id="foto_cliente" name="foto_cliente" accept="image/*"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG.</p>
+                            @error('foto_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="identificacion_frente_cliente" class="block text-sm font-medium text-gray-700 mb-1">Identificación Oficial (Frente)</label>
+                            <input type="file" id="identificacion_frente_cliente" name="identificacion_frente_cliente" accept="image/*"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG.</p>
+                            @error('identificacion_frente_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="identificacion_reverso_cliente" class="block text-sm font-medium text-gray-700 mb-1">Identificación Oficial (Reverso)</label>
+                            <input type="file" id="identificacion_reverso_cliente" name="identificacion_reverso_cliente" accept="image/*"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG.</p>
+                            @error('identificacion_reverso_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="comprobante_domicilio_cliente" class="block text-sm font-medium text-gray-700 mb-1">Comprobante de Domicilio</label>
+                            <input type="file" id="comprobante_domicilio_cliente" name="comprobante_domicilio_cliente" accept="image/*,.pdf"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG, PDF.</p>
+                            @error('comprobante_domicilio_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="acta_de_nacimiento_cliente" class="block text-sm font-medium text-gray-700 mb-1">Acta de Nacimiento</label>
+                            <input type="file" id="acta_de_nacimiento_cliente" name="acta_de_nacimiento_cliente" accept="image/*,.pdf"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG, PDF.</p>
+                            @error('acta_de_nacimiento_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="curp_cliente" class="block text-sm font-medium text-gray-700 mb-1">CURP (Documento)</label>
+                            <input type="file" id="curp_cliente" name="curp_cliente" accept="image/*,.pdf"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG, PDF.</p>
+                            @error('curp_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="comprobante_ingresos_cliente" class="block text-sm font-medium text-gray-700 mb-1">Comprobante de Ingresos</label>
+                            <input type="file" id="comprobante_ingresos_cliente" name="comprobante_ingresos_cliente" accept="image/*,.pdf"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG, PDF.</p>
+                            @error('comprobante_ingresos_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="fachada_casa_cliente" class="block text-sm font-medium text-gray-700 mb-1">Fachada de Casa</label>
+                            <input type="file" id="fachada_casa_cliente" name="fachada_casa_cliente" accept="image/*"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG.</p>
+                            @error('fachada_casa_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="fachada_negocio_cliente" class="block text-sm font-medium text-gray-700 mb-1">Fachada de Negocio</label>
+                            <input type="file" id="fachada_negocio_cliente" name="fachada_negocio_cliente" accept="image/*"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">Formatos permitidos: JPG, PNG.</p>
+                            @error('fachada_negocio_cliente')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Modal para gestionar tipos de trabajo -->
+                <div id="tiposTrabajoModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-transform duration-300 ease-in-out scale-95 opacity-0" id="modal-content">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-gray-900">Gestionar Tipos de Trabajo</h3>
+                                <!-- Asegurarse de que todos los botones dentro del modal tengan type="button" -->
+                                <button type="button" id="cerrarModalBtn" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Formulario para agregar/editar tipo de trabajo -->
+                            <div class="mb-6 p-4 bg-gray-50 rounded-xl">
+                                <h4 id="form-title" class="text-md font-medium text-gray-900 mb-3">Agregar Nuevo Tipo</h4>
+                                <div class="space-y-3">
+                                    <input type="hidden" id="tipo_trabajo_id" value="">
+                                    <div>
+                                        <label for="nuevo_tipo_nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
+                                        <input type="text" id="nuevo_tipo_nombre" class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label for="nuevo_tipo_descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                        <textarea id="nuevo_tipo_descripcion" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                    </div>
+                                    <div class="flex justify-end gap-2">
+                                        <!-- Asegurarse de que todos los botones dentro del modal tengan type="button" -->
+                                        <button type="button" id="cancelarEdicionBtn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors hidden">
+                                            Cancelar
+                                        </button>
+                                        <!-- Asegurarse de que todos los botones dentro del modal tengan type="button" -->
+                                        <button type="button" id="agregarTipoTrabajoBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition duration-300 ease-in-out shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="mensaje-error" class="mt-2 text-sm text-red-600 hidden"></div>
+                                <div id="mensaje-exito" class="mt-2 text-sm text-green-600 hidden"></div>
+                            </div>
+
+                            <!-- Lista de tipos de trabajo existentes -->
+                            <div>
+                                <h4 class="text-md font-medium text-gray-900 mb-3">Tipos de Trabajo Existentes</h4>
+                                <div class="max-h-60 overflow-y-auto">
+                                    <ul id="lista-tipos-trabajo" class="divide-y divide-gray-200">
+                                        <!-- Los tipos de trabajo se cargarán dinámicamente aquí -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-6 flex items-center justify-end">
                     <a href="{{ route('clientes.index') }}" class="mr-3 px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Cancelar
@@ -699,490 +970,10 @@
             </form>
         </div>
     </div>
+
 @endsection
 
 @section('scripts')
-    <script>
-        // Declarar la función initMap en el ámbito global para que Google Maps pueda llamarla
-        window.initMap = function() {
-            const mapElement = document.getElementById('map');
-            const inputElement = document.getElementById('direccion');
-
-            if (!mapElement || !inputElement) return;
-
-            const initialLatLng = { lat: 19.432608, lng: -99.133209 }; // Ciudad de México como punto inicial
-
-            const map = new google.maps.Map(mapElement, {
-                center: initialLatLng,
-                zoom: 13,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: true
-            });
-
-            // Usar el marcador estándar pero con una advertencia en la consola sobre su deprecación
-            const marker = new google.maps.Marker({
-                position: initialLatLng,
-                map: map,
-                draggable: true
-            });
-
-            // Manejar el evento de arrastrar y soltar
-            marker.addListener('dragend', () => {
-                const position = marker.getPosition();
-                const geocoder = new google.maps.Geocoder();
-
-                geocoder.geocode({ location: position }, (results, status) => {
-                    if (status === 'OK' && results[0]) {
-                        inputElement.value = results[0].formatted_address;
-                    }
-                });
-            });
-
-            const autocomplete = new google.maps.places.Autocomplete(inputElement, {
-                types: ['address']
-            });
-
-            autocomplete.bindTo('bounds', map);
-
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-
-                if (!place.geometry) {
-                    return;
-                }
-
-                if (place.geometry.viewport) {
-                    map.fitBounds(place.geometry.viewport);
-                } else {
-                    map.setCenter(place.geometry.location);
-                    map.setZoom(17);
-                }
-
-                marker.setPosition(place.geometry.location);
-                inputElement.value = place.formatted_address;
-            });
-        };
-    </script>
-
-    <!-- Cargar la API de Google Maps con los módulos necesarios y async -->
-    <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0r1QIkUR4Jn1JSRG9rMd0gjYSKDV7TLE&libraries=places&callback=initMap">
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Manejo de tabs
-            const tabs = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabId = tab.getAttribute('data-tab');
-
-                    // Remover la clase active de todas las tabs y contenidos
-                    tabs.forEach(t => {
-                        t.classList.remove('active');
-                        t.classList.remove('border-blue-600', 'text-blue-600');
-                        t.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-                    });
-
-                    tabContents.forEach(content => {
-                        content.classList.add('hidden');
-                        content.classList.remove('active');
-                    });
-
-                    // Agregar la clase active a la tab seleccionada y su contenido
-                    tab.classList.add('active', 'border-blue-600', 'text-blue-600');
-                    tab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-
-                    const selectedContent = document.getElementById(tabId);
-                    if (selectedContent) {
-                        selectedContent.classList.remove('hidden');
-                        selectedContent.classList.add('active');
-                    }
-                });
-            });
-
-            // Mostrar/ocultar sección de cónyuge según estado civil
-            const estadoCivilSelect = document.getElementById('estado_civil');
-            const conyugeSection = document.getElementById('conyuge_section');
-
-            if (estadoCivilSelect && conyugeSection) {
-                estadoCivilSelect.addEventListener('change', function() {
-                    if (this.value === 'Casado' || this.value === 'Union Libre') {
-                        conyugeSection.classList.remove('hidden');
-
-                        // Hacer campos requeridos
-                        const conyugeInputs = conyugeSection.querySelectorAll('input');
-                        conyugeInputs.forEach(input => {
-                            input.setAttribute('required', 'required');
-                        });
-                    } else {
-                        conyugeSection.classList.add('hidden');
-
-                        // Quitar requerido
-                        const conyugeInputs = conyugeSection.querySelectorAll('input');
-                        conyugeInputs.forEach(input => {
-                            input.removeAttribute('required');
-                        });
-                    }
-                });
-            }
-
-            // Mostrar/ocultar detalles del vehículo
-            const vehiculoSelect = document.getElementById('vehiculo');
-            const vehiculoDetails = document.getElementById('vehiculo_details');
-
-            if (vehiculoSelect && vehiculoDetails) {
-                vehiculoSelect.addEventListener('change', function() {
-                    if (this.value === '1') {
-                        vehiculoDetails.classList.remove('hidden');
-
-                        // Hacer campos requeridos
-                        const vehiculoInputs = vehiculoDetails.querySelectorAll('input');
-                        vehiculoInputs.forEach(input => {
-                            input.setAttribute('required', 'required');
-                        });
-                    } else {
-                        vehiculoDetails.classList.add('hidden');
-
-                        // Quitar requerido
-                        const vehiculoInputs = vehiculoDetails.querySelectorAll('input');
-                        vehiculoInputs.forEach(input => {
-                            input.removeAttribute('required');
-                        });
-                    }
-                });
-            }
-
-            // Cálculos financieros
-            const ingresoMensualPromedio = document.getElementById('ingreso_mensual_promedio');
-            const otrosIngresosMensuales = document.getElementById('otros_ingresos_mensuales');
-            const ingresoPromedioMensualTotal = document.getElementById('ingreso_promedio_mensual_total');
-
-            const gastoAlimento = document.getElementById('gasto_alimento');
-            const gastoLuz = document.getElementById('gasto_luz');
-            const gastoTelefono = document.getElementById('gasto_telefono');
-            const gastoTransporte = document.getElementById('gasto_transporte');
-            const gastoRenta = document.getElementById('gasto_renta');
-            const gastoInversionNegocio = document.getElementById('gasto_inversion_negocio');
-            const gastoOtrosCreditos = document.getElementById('gasto_otros_creditos');
-            const gastoOtros = document.getElementById('gasto_otros');
-
-            const totalGastoMensual = document.getElementById('total_gasto_mensual');
-            const totalDisponibleMensual = document.getElementById('total_disponible_mensual');
-
-            const updateFinancials = () => {
-                // Calcular ingreso total
-                const ingresoTotal = parseFloat(ingresoMensualPromedio.value || 0) + parseFloat(otrosIngresosMensuales.value || 0);
-                ingresoPromedioMensualTotal.value = ingresoTotal.toFixed(2);
-
-                // Calcular gasto total
-                const gastoTotal =
-                    parseFloat(gastoAlimento.value || 0) +
-                    parseFloat(gastoLuz.value || 0) +
-                    parseFloat(gastoTelefono.value || 0) +
-                    parseFloat(gastoTransporte.value || 0) +
-                    parseFloat(gastoRenta.value || 0) +
-                    parseFloat(gastoInversionNegocio.value || 0) +
-                    parseFloat(gastoOtrosCreditos.value || 0) +
-                    parseFloat(gastoOtros.value || 0);
-
-                totalGastoMensual.value = gastoTotal.toFixed(2);
-
-                // Calcular disponible
-                const disponible = ingresoTotal - gastoTotal;
-                totalDisponibleMensual.value = disponible.toFixed(2);
-            };
-
-            // Agregar event listeners para los campos financieros
-            const financialInputs = [
-                ingresoMensualPromedio, otrosIngresosMensuales,
-                gastoAlimento, gastoLuz, gastoTelefono, gastoTransporte,
-                gastoRenta, gastoInversionNegocio, gastoOtrosCreditos, gastoOtros
-            ];
-
-            financialInputs.forEach(input => {
-                if (input) {
-                    input.addEventListener('input', updateFinancials);
-                }
-            });
-
-            // Calcular inicialmente
-            updateFinancials();
-
-            // Manejo del formulario
-            const form = document.querySelector('form');
-            const crearClienteBtn = document.getElementById('crearClienteBtn');
-            const loading = document.getElementById('loading');
-
-            if (form && crearClienteBtn && loading) {
-                form.addEventListener('submit', function() {
-                    crearClienteBtn.disabled = true;
-                    loading.classList.remove('hidden');
-                });
-            }
-
-            // Advertencia al salir de la página con cambios sin guardar
-            let formChanged = false;
-
-            const inputs = document.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    formChanged = true;
-                });
-            });
-
-            window.addEventListener('beforeunload', function(e) {
-                if (formChanged) {
-                    e.preventDefault();
-                    e.returnValue = '¿Estás seguro de que quieres salir? Los datos no guardados se perderán.';
-                }
-            });
-
-            form.addEventListener('submit', function() {
-                formChanged = false;
-            });
-        });
-    </script>
-
-    <!-- Implementación directa de CURP sin dependencias externas -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("Inicializando manejadores de CURP (implementación propia)");
-
-            // Mapeo de estados a códigos para CURP
-            const estadoMap = {
-                "Aguascalientes": "AS",
-                "Baja California": "BC",
-                "Baja California Sur": "BS",
-                "Campeche": "CC",
-                "Coahuila": "CL",
-                "Colima": "CM",
-                "Chiapas": "CS",
-                "Chihuahua": "CH",
-                "Distrito Federal": "DF",
-                "CDMX": "DF",
-                "Durango": "DG",
-                "Guanajuato": "GT",
-                "Guerrero": "GR",
-                "Hidalgo": "HG",
-                "Jalisco": "JC",
-                "Estado de México": "MC",
-                "No especificado": "NE",
-                "Michoacán": "MN",
-                "Morelos": "MS",
-                "Nayarit": "NT",
-                "Nuevo León": "NL",
-                "Oaxaca": "OC",
-                "Puebla": "PL",
-                "Querétaro": "QT",
-                "Quintana Roo": "QR",
-                "San Luis Potosí": "SP",
-                "Sinaloa": "SL",
-                "Sonora": "SR",
-                "Tabasco": "TC",
-                "Tamaulipas": "TS",
-                "Tlaxcala": "TL",
-                "Veracruz": "VZ",
-                "Yucatán": "YN",
-                "Zacatecas": "ZS"
-            };
-
-            // Implementación propia de generación de CURP
-            function generarCURP(datos) {
-                try {
-                    // Extraer datos
-                    let { nombre, apellidoPaterno, apellidoMaterno, genero, estado, fechaNacimiento } = datos;
-
-                    // Validar datos
-                    if (!nombre || !apellidoPaterno || !genero || !estado || !fechaNacimiento) {
-                        throw new Error("Faltan datos requeridos para generar CURP");
-                    }
-
-                    // Asegurar que apellidoMaterno tenga un valor
-                    apellidoMaterno = apellidoMaterno || 'X';
-
-                    // Formatear fecha de nacimiento (de YYYY-MM-DD a YYMMDD)
-                    const fechaPartes = fechaNacimiento.split('-');
-                    if (fechaPartes.length !== 3) {
-                        throw new Error("Formato de fecha incorrecto. Use YYYY-MM-DD");
-                    }
-
-                    const anio = fechaPartes[0].substring(2); // Últimos dos dígitos del año
-                    const mes = fechaPartes[1];
-                    const dia = fechaPartes[2];
-                    const fechaFormateada = anio + mes + dia;
-
-                    // 1. Primera letra del primer apellido
-                    let curp = apellidoPaterno.charAt(0).toUpperCase();
-
-                    // 2. Primera vocal interna del primer apellido
-                    let vocales = apellidoPaterno.substring(1).match(/[AEIOU]/i);
-                    curp += vocales ? vocales[0].toUpperCase() : 'X';
-
-                    // 3. Primera letra del segundo apellido o X si no tiene
-                    curp += apellidoMaterno.charAt(0).toUpperCase();
-
-                    // 4. Primera letra del nombre
-                    curp += nombre.charAt(0).toUpperCase();
-
-                    // 5. Fecha de nacimiento en formato AAMMDD
-                    curp += fechaFormateada;
-
-                    // 6. Género (H o M)
-                    curp += genero.toUpperCase();
-
-                    // 7. Código del estado
-                    curp += estado;
-
-                    // 8. Primera consonante interna del primer apellido
-                    let consonantes = apellidoPaterno.substring(1).match(/[BCDFGHJKLMNPQRSTVWXYZ]/i);
-                    curp += consonantes ? consonantes[0].toUpperCase() : 'X';
-
-                    // 9. Primera consonante interna del segundo apellido
-                    consonantes = apellidoMaterno.substring(1).match(/[BCDFGHJKLMNPQRSTVWXYZ]/i);
-                    curp += consonantes ? consonantes[0].toUpperCase() : 'X';
-
-                    // 10. Primera consonante interna del nombre
-                    consonantes = nombre.substring(1).match(/[BCDFGHJKLMNPQRSTVWXYZ]/i);
-                    curp += consonantes ? consonantes[0].toUpperCase() : 'X';
-
-                    // 11. Dígito para personas nacidas antes del 2000 (0) o después (A)
-                    const anioCompleto = parseInt(fechaPartes[0]);
-                    curp += anioCompleto < 2000 ? '0' : 'A';
-
-                    // 12. Dígito verificador (algoritmo simplificado)
-                    curp += '1';
-
-                    return curp;
-                } catch (error) {
-                    console.error("Error generando CURP:", error);
-                    throw error;
-                }
-            }
-
-            // Validar CURP (implementación básica)
-            function validarCURP(curp) {
-                // Expresión regular para validar el formato básico de CURP
-                const curpRegex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A][0-9]$/;
-                return curpRegex.test(curp);
-            }
-
-            // Función para generar CURP desde el formulario
-            async function generarCurp() {
-                console.log("Función generarCurp ejecutada (implementación propia)");
-                try {
-                    const nombre = document.getElementById('nombre')?.value || '';
-                    const apellidoPaterno = document.getElementById('apellido_paterno')?.value || '';
-                    const apellidoMaterno = document.getElementById('apellido_materno')?.value || '';
-                    const genero = document.querySelector('input[name="sexo"]:checked')?.value || '';
-                    const estado = document.getElementById('lugar_nacimiento')?.value || '';
-                    const fechaNacimiento = document.getElementById('fecha_nacimiento')?.value || '';
-
-                    // Verificar si los campos requeridos están llenos
-                    if (!nombre || !apellidoPaterno || !genero || !estado || !fechaNacimiento) {
-                        alert('Por favor completa los campos de nombre, apellido paterno, sexo, lugar de nacimiento y fecha de nacimiento para generar la CURP.');
-                        return;
-                    }
-
-                    // Mostrar indicador de carga
-                    const generarCurpBtn = document.getElementById('generarCurpBtn');
-                    generarCurpBtn.disabled = true;
-                    generarCurpBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-
-                    // Crear objeto de datos para la generación de CURP
-                    const datos = {
-                        nombre: nombre,
-                        apellidoPaterno: apellidoPaterno,
-                        apellidoMaterno: apellidoMaterno || 'X',
-                        genero: genero === 'Hombre' ? 'H' : 'M',
-                        estado: estadoMap[estado] || 'NE',
-                        fechaNacimiento: fechaNacimiento
-                    };
-
-                    console.log("Datos para generar CURP:", datos);
-
-                    // Generar CURP usando nuestra implementación
-                    const curpGenerado = generarCURP(datos);
-                    console.log("CURP generado:", curpGenerado);
-
-                    document.getElementById('curp').value = curpGenerado;
-
-                    // Mostrar mensaje de éxito
-                    const validationSuccessMessage = document.getElementById('validationSuccessMessage');
-                    const validationMessage = document.getElementById('validationMessage');
-                    validationSuccessMessage.classList.remove('hidden');
-                    validationMessage.classList.add('hidden');
-
-                } catch (error) {
-                    console.error('Error al generar CURP:', error);
-                    alert('Error al generar CURP: ' + error.message);
-                } finally {
-                    // Restaurar botón
-                    const generarCurpBtn = document.getElementById('generarCurpBtn');
-                    generarCurpBtn.disabled = false;
-                    generarCurpBtn.textContent = 'Generar CURP';
-                }
-            }
-
-            // Función para validar CURP desde el formulario
-            function validarCurp() {
-                console.log("Función validarCurp ejecutada (implementación propia)");
-                try {
-                    const curpInput = document.getElementById('curp');
-                    const validationMessage = document.getElementById('validationMessage');
-                    const validationSuccessMessage = document.getElementById('validationSuccessMessage');
-                    const curpValue = curpInput.value.trim();
-
-                    if (!curpValue) {
-                        alert('Por favor ingrese una CURP para validar.');
-                        return;
-                    }
-
-                    // Mostrar indicador de carga
-                    const validarCurpBtn = document.getElementById('validarCurpBtn');
-                    validarCurpBtn.disabled = true;
-                    validarCurpBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-
-                    // Validar CURP usando nuestra implementación
-                    const isValid = validarCURP(curpValue);
-                    console.log("CURP válido:", isValid);
-
-                    if (isValid) {
-                        validationMessage.classList.add('hidden');
-                        validationSuccessMessage.classList.remove('hidden');
-                    } else {
-                        validationMessage.classList.remove('hidden');
-                        validationSuccessMessage.classList.add('hidden');
-                    }
-
-                } catch (error) {
-                    console.error('Error al validar CURP:', error);
-                    alert('Error al validar CURP: ' + error.message);
-                } finally {
-                    // Restaurar botón
-                    const validarCurpBtn = document.getElementById('validarCurpBtn');
-                    validarCurpBtn.disabled = false;
-                    validarCurpBtn.textContent = 'Validar CURP';
-                }
-            }
-
-            // Agregar event listeners a los botones
-            const generarCurpBtn = document.getElementById('generarCurpBtn');
-            const validarCurpBtn = document.getElementById('validarCurpBtn');
-
-            if (generarCurpBtn) {
-                console.log("Agregando event listener a generarCurpBtn");
-                generarCurpBtn.addEventListener('click', generarCurp);
-            }
-
-            if (validarCurpBtn) {
-                console.log("Agregando event listener a validarCurpBtn");
-                validarCurpBtn.addEventListener('click', validarCurp);
-            }
-        });
-    </script>
+    <!-- No es necesario incluir scripts individuales, ya que todo se maneja desde app.js -->
 @endsection
 

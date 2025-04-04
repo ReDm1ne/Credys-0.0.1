@@ -1,76 +1,128 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <title>Editar Cliente</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        form {
-            width: 50%;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        label {
-            display: block;
-            margin-bottom: 10px;
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="file"] {
-            width: 100%;
-            height: 40px;
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button[type="submit"] {
-            width: 100%;
-            height: 40px;
-            background-color: #4CAF50;
-            color: #fff;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button[type="submit"]:hover {
-            background-color: #3e8e41;
-        }
-    </style>
-</head>
-<body>
-    <h1>Editar cliente</h1>
-    <form action="{{ route('clientes.update', $cliente->id) }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        @method('PUT')
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" name="nombre" value="{{ $cliente->nombre }}" required>
-        <label for="apellido_paterno">Apellido Paterno:</label>
-        <input type="text" id="apellido_paterno" name="apellido_paterno" value="{{ $cliente->apellido_paterno }}" required>
-        <label for="apellido_materno">Apellido Materno:</label>
-        <input type="text" id="apellido_materno" name="apellido_materno" value="{{ $cliente->apellido_materno }}" required>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" value="{{ $cliente->email }}" required>
-        <label for="telefono_particular">Telefono Particular:</label>
-        <input type="text" id="telefono_particular" name="telefono_particular" value="{{ $cliente->telefono_particular }}" required>
-        <label for="telefono_celular">Teléfono Celular:</label>
-        <input type="text" id="telefono_celular" name="telefono_celular" value="{{ $cliente->telefono_celular }}" required>
-        <label for="curp">CURP:</label>
-        <input type="text" id="curp" name="curp" value="{{ $cliente->curp }}" required>
-        <label for="direccion">Direccion:</label>
-        <input type="text" id="direccion" name="direccion" value="{{ $cliente->direccion }}" required>
-        <label for="identificacion">Identificacion:</label>
-        <input type="file" name="identificacion" accept="image/jpeg, image/png">
-        <button type="submit">Actualizar</button>
-    </form>
-</body>
-</html>
+@extends('layouts.app')
+
+@section('content')
+    <div class="container mx-auto">
+        <h1 class="text-2xl font-bold mb-4">Editar Cliente</h1>
+
+        <form action="{{ route('clientes.update', $cliente->id) }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div class="shadow sm:rounded-md sm:overflow-hidden">
+                <div class="bg-white py-6 px-4 space-y-6 sm:p-6">
+                    <div>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Información General</h3>
+                        <p class="mt-1 text-sm text-gray-500">Información básica del cliente.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6">
+                        <div class="col-span-1">
+                            <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                            <input type="text" name="nombre" id="nombre" value="{{ old('nombre', $cliente->nombre) }}"
+                                   class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            @error('nombre')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="apellido" class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                            <input type="text" name="apellido" id="apellido" value="{{ old('apellido', $cliente->apellido) }}"
+                                   class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            @error('apellido')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" name="email" id="email" value="{{ old('email', $cliente->email) }}"
+                                   class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            @error('email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="telefono_personal" class="block text-sm font-medium text-gray-700 mb-1">Teléfono Personal</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                </div>
+                                <input type="tel" id="telefono_personal" name="telefono_personal" value="{{ old('telefono_personal', $cliente->telefono_personal) }}" pattern="[0-9]{10}"
+                                       class="w-full pl-10 px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            @error('telefono_personal')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 py-6 px-4 space-y-6 sm:p-6">
+                    <div>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Información Laboral</h3>
+                        <p class="mt-1 text-sm text-gray-500">Información sobre el empleo del cliente.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6">
+                        <div class="col-span-1">
+                            <label for="empresa" class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
+                            <input type="text" name="empresa" id="empresa" value="{{ old('empresa', $cliente->empresa) }}"
+                                   class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            @error('empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="rfc_de_la_empresa" class="block text-sm font-medium text-gray-700 mb-1">RFC de la Empresa</label>
+                            <input type="text" name="rfc_de_la_empresa" id="rfc_de_la_empresa" value="{{ old('rfc_de_la_empresa', $cliente->rfc_de_la_empresa) }}"
+                                   class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            @error('rfc_de_la_empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="telefono_empresa" class="block text-sm font-medium text-gray-700 mb-1">Teléfono de la Empresa</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                </div>
+                                <input type="tel" id="telefono_empresa" name="telefono_empresa" value="{{ old('telefono_empresa', $cliente->telefono_empresa) }}" pattern="[0-9]{10}"
+                                       class="w-full pl-10 px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            @error('telefono_empresa')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-1">
+                            <label for="puesto" class="block text-sm font-medium text-gray-700 mb-1">Puesto</label>
+                            <input type="text" name="puesto" id="puesto" value="{{ old('puesto', $cliente->puesto) }}"
+                                   class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            @error('puesto')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Guardar Cambios
+                    </button>
+                    <a href="{{ route('clientes.index') }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancelar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+@endsection
+

@@ -12,6 +12,9 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // Temporalmente excluir las rutas de tipos de trabajo para pruebas
+        'tipos-trabajo',
+        'tipos-trabajo/*'
     ];
 }
+

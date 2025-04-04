@@ -172,9 +172,9 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="flex items-center p-2 w-full text-white transition duration-200 rounded-lg hover:bg-red-700 group">
-                    <svg class="flex-shrink-0 w-5 h-5 text-gray-400 transition duration-75 group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m
-4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
+                    <svg class="flex-shrink-0 w-5 h-5 text-gray-400 transition duration-75 group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org
+                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"/>
                     </svg>
                     <span class="ms-3">Cerrar sesión</span>
                 </button>
@@ -215,25 +215,34 @@
         // Función para mostrar el sidebar en móviles
         function showSidebar() {
             sidebar.classList.remove('-translate-x-full');
+            sidebar.setAttribute('aria-hidden', 'false');
+            overlay.classList.remove('hidden');
             setTimeout(() => {
-                overlay.classList.remove('hidden', 'opacity-0');
                 overlay.classList.add('opacity-100');
-            }, 50);
+                overlay.classList.remove('opacity-0');
+            }, 10);
+            // Asegurarse de que el body no tenga la clase bg-gray-100
+            document.body.classList.remove('bg-gray-100');
         }
 
         // Función para ocultar el sidebar en móviles
         function hideSidebar() {
             sidebar.classList.add('-translate-x-full');
+            sidebar.setAttribute('aria-hidden', 'true');
             overlay.classList.remove('opacity-100');
             overlay.classList.add('opacity-0');
             setTimeout(() => {
                 overlay.classList.add('hidden');
             }, 300);
+
+            // Forzar la eliminación de la clase bg-gray-100 del body
+            document.body.classList.remove('bg-gray-100');
         }
 
         // Agregar eventos a los botones de toggle para móviles
         toggleButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
                 if (sidebar.classList.contains('-translate-x-full')) {
                     showSidebar();
                 } else {
@@ -244,28 +253,63 @@
 
         // Agregar evento al botón de cerrar para móviles
         if (closeButton) {
-            closeButton.addEventListener('click', hideSidebar);
+            closeButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                hideSidebar();
+            });
         }
 
         // Cerrar sidebar al hacer clic en el overlay
-        overlay.addEventListener('click', hideSidebar);
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                hideSidebar();
+            });
+        }
 
         // Cerrar sidebar al hacer clic en un enlace (en móviles)
         const sidebarLinks = sidebar.querySelectorAll('a');
         sidebarLinks.forEach(link => {
             link.addEventListener('click', function() {
-                if (window.innerWidth < 768) { // md breakpoint
+                if (window.innerWidth < 768) {
                     hideSidebar();
                 }
             });
         });
 
-        // Ajustar cuando cambia el tamaño de la ventana
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) { // md breakpoint
-                overlay.classList.add('hidden');
+        // Cerrar sidebar cuando se hace clic fuera en dispositivos móviles
+        document.addEventListener('click', function(event) {
+            if (window.innerWidth < 768 &&
+                !sidebar.contains(event.target) &&
+                !event.target.closest('[data-drawer-toggle="logo-sidebar"]') &&
+                !sidebar.classList.contains('-translate-x-full')) {
+                hideSidebar();
             }
         });
+
+        // Función para detectar si es un dispositivo móvil real
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Función específica para dispositivos móviles
+        function handleMobileSpecific() {
+            if (isMobileDevice()) {
+                // Verificar periódicamente en dispositivos móviles
+                setInterval(function() {
+                    if (sidebar.classList.contains('-translate-x-full')) {
+                        document.body.classList.remove('bg-gray-100');
+                    }
+                }, 100);
+            }
+        }
+
+        // Iniciar manejo específico para móviles
+        handleMobileSpecific();
+
+        // Verificar y eliminar la clase al cargar la página
+        if (sidebar.classList.contains('-translate-x-full')) {
+            document.body.classList.remove('bg-gray-100');
+        }
     });
 </script>
 
