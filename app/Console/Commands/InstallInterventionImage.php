@@ -19,18 +19,18 @@ class InstallInterventionImage extends Command
      *
      * @var string
      */
-    protected $description = 'Instala y configura Intervention Image para el procesamiento de imágenes';
+    protected $description = 'Instala y configura Intervention Image v2.7 para el procesamiento de imágenes';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('Instalando Intervention Image...');
+        $this->info('Instalando Intervention Image v2.7...');
 
-        // Ejecutar composer require
-        $this->info('Ejecutando: composer require intervention/image');
-        exec('composer require intervention/image');
+        // Ejecutar composer require con versión específica
+        $this->info('Ejecutando: composer require intervention/image:^2.7');
+        exec('composer require intervention/image:^2.7');
 
         // Publicar el proveedor de servicios
         $this->info('Publicando el proveedor de servicios...');
@@ -40,12 +40,16 @@ class InstallInterventionImage extends Command
 
         // Limpiar la caché
         $this->info('Limpiando la caché...');
-        Artisan::call('optimize:clear');
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
 
-        $this->info('Intervention Image ha sido instalado y configurado correctamente.');
-        $this->info('Ahora puedes usar el servicio ImageService para optimizar imágenes automáticamente.');
+        // Crear enlace simbólico para el almacenamiento
+        $this->info('Creando enlace simbólico para el almacenamiento...');
+        Artisan::call('storage:link');
+
+        $this->info('Intervention Image v2.7 ha sido instalado y configurado correctamente.');
+        $this->info('Las imágenes se guardarán en storage/app/public/ y serán accesibles a través de /storage/');
 
         return Command::SUCCESS;
     }
 }
-

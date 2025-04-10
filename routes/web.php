@@ -8,6 +8,9 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\TipoTrabajoController;
+use App\Services\ImageService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -15,6 +18,46 @@ Route::get('/', function () {
     } else {
         return redirect()->route('login');
     }
+});
+
+// Ruta de prueba para verificar el almacenamiento de imágenes
+Route::get('/test-storage', function () {
+    // Verificar si el enlace simbólico existe
+    $linkExists = file_exists(public_path('storage'));
+
+    // Verificar si los directorios existen
+    $directories = [
+        'foto_clientes',
+        'identificacion_frente_clientes',
+        'identificacion_reverso_clientes',
+        'comprobante_domicilio_clientes',
+        'acta_de_nacimiento_clientes',
+        'curp_clientes',
+        'comprobante_ingresos_clientes',
+        'fachada_casa_clientes',
+        'fachada_negocio_clientes',
+        'conyuge_fotos',
+        'conyuge_identificacions'
+    ];
+
+    $dirStatus = [];
+    foreach ($directories as $dir) {
+        $exists = Storage::disk('public')->exists($dir);
+        $path = storage_path('app/public/' . $dir);
+        $isWritable = file_exists($path) && is_writable($path);
+        $dirStatus[$dir] = [
+            'exists' => $exists,
+            'writable' => $isWritable
+        ];
+    }
+
+    return response()->json([
+        'storage_link_exists' => $linkExists,
+        'directories' => $dirStatus,
+        'app_url' => config('app.url'),
+        'storage_path' => storage_path('app/public'),
+        'public_path' => public_path(),
+    ]);
 });
 
 Route::middleware('guest')->group(function () {
@@ -49,4 +92,3 @@ Route::middleware('auth')->group(function () {
     Route::resource('tipos-trabajo', TipoTrabajoController::class);
     Route::get('/api/tipos-trabajo', [TipoTrabajoController::class, 'getActiveTiposTrabajo'])->name('api.tipos-trabajo');
 });
-
