@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\InstallInterventionImage::class,
         \App\Console\Commands\VerifyStorageSetup::class,
         \App\Console\Commands\FixInterventionImage::class,
+
     ];
 
     /**

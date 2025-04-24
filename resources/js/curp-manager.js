@@ -160,6 +160,14 @@ function validarCURP(curp) {
 async function verificarCURPUnica(curp) {
     try {
         const response = await fetch(`/api/verificar-curp?curp=${curp}`)
+
+        // Verificar si la respuesta es JSON válido
+        const contentType = response.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+            console.error("La respuesta no es JSON válido:", await response.text())
+            return true // En caso de error, permitir continuar
+        }
+
         const data = await response.json()
         return data.disponible
     } catch (error) {
@@ -181,9 +189,30 @@ async function generarCurpHandler() {
 
         // Verificar si los campos requeridos están llenos
         if (!nombre || !apellidoPaterno || !genero || !estado || !fechaNacimiento) {
-            alert(
-                "Por favor completa los campos de nombre, apellido paterno, sexo, lugar de nacimiento y fecha de nacimiento para generar la CURP.",
-            )
+            // Mostrar modal en lugar de alert
+            const curpModal = document.getElementById("curp-modal")
+            const curpModalContent = document.getElementById("curp-modal-content")
+            const curpModalTitle = document.getElementById("curp-modal-title")
+            const curpModalMessage = document.getElementById("curp-modal-message")
+            const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+            if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                curpModalTitle.textContent = "Datos Incompletos"
+                curpModalMessage.textContent =
+                    "Por favor completa los campos de nombre, apellido paterno, sexo, lugar de nacimiento y fecha de nacimiento para generar la CURP."
+
+                // Ocultar palomita
+                if (curpModalCheckIcon) {
+                    curpModalCheckIcon.classList.add("hidden")
+                }
+
+                curpModal.classList.remove("hidden")
+                setTimeout(() => {
+                    curpModal.classList.add("opacity-100")
+                    curpModalContent.classList.remove("scale-95", "opacity-0")
+                    curpModalContent.classList.add("scale-100", "opacity-100")
+                }, 10)
+            }
             return
         }
 
@@ -226,14 +255,110 @@ async function generarCurpHandler() {
                 validationSuccessMessage.classList.add("hidden")
                 validationMessage.textContent = "Esta CURP ya existe en esta sucursal"
                 validationMessage.classList.remove("hidden")
+
+                // Mostrar modal
+                const curpModal = document.getElementById("curp-modal")
+                const curpModalContent = document.getElementById("curp-modal-content")
+                const curpModalTitle = document.getElementById("curp-modal-title")
+                const curpModalMessage = document.getElementById("curp-modal-message")
+                const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+                if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                    curpModalTitle.textContent = "CURP Duplicada"
+                    curpModalMessage.textContent =
+                        "Esta CURP ya existe en esta sucursal. No es posible continuar con el registro."
+
+                    // Ocultar palomita
+                    if (curpModalCheckIcon) {
+                        curpModalCheckIcon.classList.add("hidden")
+                    }
+
+                    curpModal.classList.remove("hidden")
+                    setTimeout(() => {
+                        curpModal.classList.add("opacity-100")
+                        curpModalContent.classList.remove("scale-95", "opacity-0")
+                        curpModalContent.classList.add("scale-100", "opacity-100")
+                    }, 10)
+                }
+            } else {
+                // Mostrar modal con palomita cuando la CURP es válida y única
+                const curpModal = document.getElementById("curp-modal")
+                const curpModalContent = document.getElementById("curp-modal-content")
+                const curpModalTitle = document.getElementById("curp-modal-title")
+                const curpModalMessage = document.getElementById("curp-modal-message")
+                const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+                if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                    curpModalTitle.textContent = "CURP Generada Correctamente"
+                    curpModalMessage.textContent = "La CURP ha sido generada correctamente y está disponible para su uso."
+
+                    // Mostrar palomita
+                    if (curpModalCheckIcon) {
+                        curpModalCheckIcon.classList.remove("hidden")
+                    }
+
+                    curpModal.classList.remove("hidden")
+                    setTimeout(() => {
+                        curpModal.classList.add("opacity-100")
+                        curpModalContent.classList.remove("scale-95", "opacity-0")
+                        curpModalContent.classList.add("scale-100", "opacity-100")
+                    }, 10)
+                }
             }
         } else {
             validationSuccessMessage.classList.add("hidden")
             validationMessage.classList.remove("hidden")
+
+            // Mostrar modal
+            const curpModal = document.getElementById("curp-modal")
+            const curpModalContent = document.getElementById("curp-modal-content")
+            const curpModalTitle = document.getElementById("curp-modal-title")
+            const curpModalMessage = document.getElementById("curp-modal-message")
+            const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+            if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                curpModalTitle.textContent = "CURP Inválida"
+                curpModalMessage.textContent = "La CURP generada no es válida. Por favor verifique los datos ingresados."
+
+                // Ocultar palomita
+                if (curpModalCheckIcon) {
+                    curpModalCheckIcon.classList.add("hidden")
+                }
+
+                curpModal.classList.remove("hidden")
+                setTimeout(() => {
+                    curpModal.classList.add("opacity-100")
+                    curpModalContent.classList.remove("scale-95", "opacity-0")
+                    curpModalContent.classList.add("scale-100", "opacity-100")
+                }, 10)
+            }
         }
     } catch (error) {
         console.error("Error al generar CURP:", error)
-        alert("Error al generar CURP: " + error.message)
+
+        // Mostrar modal en lugar de alert
+        const curpModal = document.getElementById("curp-modal")
+        const curpModalContent = document.getElementById("curp-modal-content")
+        const curpModalTitle = document.getElementById("curp-modal-title")
+        const curpModalMessage = document.getElementById("curp-modal-message")
+        const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+        if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+            curpModalTitle.textContent = "Error"
+            curpModalMessage.textContent = "Error al generar CURP: " + error.message
+
+            // Ocultar palomita
+            if (curpModalCheckIcon) {
+                curpModalCheckIcon.classList.add("hidden")
+            }
+
+            curpModal.classList.remove("hidden")
+            setTimeout(() => {
+                curpModal.classList.add("opacity-100")
+                curpModalContent.classList.remove("scale-95", "opacity-0")
+                curpModalContent.classList.add("scale-100", "opacity-100")
+            }, 10)
+        }
     } finally {
         // Restaurar botón
         const generarCurpBtn = document.getElementById("generarCurpBtn")
@@ -252,7 +377,29 @@ async function validarCurpHandler() {
         const curpValue = curpInput.value.trim()
 
         if (!curpValue) {
-            alert("Por favor ingrese una CURP para validar.")
+            // Mostrar modal en lugar de alert
+            const curpModal = document.getElementById("curp-modal")
+            const curpModalContent = document.getElementById("curp-modal-content")
+            const curpModalTitle = document.getElementById("curp-modal-title")
+            const curpModalMessage = document.getElementById("curp-modal-message")
+            const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+            if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                curpModalTitle.textContent = "CURP Vacía"
+                curpModalMessage.textContent = "Por favor ingrese una CURP para validar."
+
+                // Ocultar palomita
+                if (curpModalCheckIcon) {
+                    curpModalCheckIcon.classList.add("hidden")
+                }
+
+                curpModal.classList.remove("hidden")
+                setTimeout(() => {
+                    curpModal.classList.add("opacity-100")
+                    curpModalContent.classList.remove("scale-95", "opacity-0")
+                    curpModalContent.classList.add("scale-100", "opacity-100")
+                }, 10)
+            }
             return
         }
 
@@ -274,19 +421,116 @@ async function validarCurpHandler() {
                 validationMessage.classList.add("hidden")
                 validationSuccessMessage.classList.remove("hidden")
                 validationSuccessMessage.textContent = "CURP válido"
+
+                // Mostrar modal con palomita
+                const curpModal = document.getElementById("curp-modal")
+                const curpModalContent = document.getElementById("curp-modal-content")
+                const curpModalTitle = document.getElementById("curp-modal-title")
+                const curpModalMessage = document.getElementById("curp-modal-message")
+                const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+                if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                    curpModalTitle.textContent = "CURP Válida"
+                    curpModalMessage.textContent = "La CURP ingresada es válida y está disponible para su uso."
+
+                    // Mostrar palomita
+                    if (curpModalCheckIcon) {
+                        curpModalCheckIcon.classList.remove("hidden")
+                    }
+
+                    curpModal.classList.remove("hidden")
+                    setTimeout(() => {
+                        curpModal.classList.add("opacity-100")
+                        curpModalContent.classList.remove("scale-95", "opacity-0")
+                        curpModalContent.classList.add("scale-100", "opacity-100")
+                    }, 10)
+                }
             } else {
                 validationMessage.textContent = "Esta CURP ya existe en esta sucursal"
                 validationMessage.classList.remove("hidden")
                 validationSuccessMessage.classList.add("hidden")
+
+                // Mostrar modal
+                const curpModal = document.getElementById("curp-modal")
+                const curpModalContent = document.getElementById("curp-modal-content")
+                const curpModalTitle = document.getElementById("curp-modal-title")
+                const curpModalMessage = document.getElementById("curp-modal-message")
+                const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+                if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                    curpModalTitle.textContent = "CURP Duplicada"
+                    curpModalMessage.textContent =
+                        "Esta CURP ya está registrada en esta sucursal. No es posible continuar con el registro."
+
+                    // Ocultar palomita
+                    if (curpModalCheckIcon) {
+                        curpModalCheckIcon.classList.add("hidden")
+                    }
+
+                    curpModal.classList.remove("hidden")
+                    setTimeout(() => {
+                        curpModal.classList.add("opacity-100")
+                        curpModalContent.classList.remove("scale-95", "opacity-0")
+                        curpModalContent.classList.add("scale-100", "opacity-100")
+                    }, 10)
+                }
             }
         } else {
             validationMessage.textContent = "CURP no válido"
             validationMessage.classList.remove("hidden")
             validationSuccessMessage.classList.add("hidden")
+
+            // Mostrar modal
+            const curpModal = document.getElementById("curp-modal")
+            const curpModalContent = document.getElementById("curp-modal-content")
+            const curpModalTitle = document.getElementById("curp-modal-title")
+            const curpModalMessage = document.getElementById("curp-modal-message")
+            const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+            if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+                curpModalTitle.textContent = "CURP Inválida"
+                curpModalMessage.textContent =
+                    "El formato de la CURP ingresada no es válido. Por favor verifique e intente nuevamente."
+
+                // Ocultar palomita
+                if (curpModalCheckIcon) {
+                    curpModalCheckIcon.classList.add("hidden")
+                }
+
+                curpModal.classList.remove("hidden")
+                setTimeout(() => {
+                    curpModal.classList.add("opacity-100")
+                    curpModalContent.classList.remove("scale-95", "opacity-0")
+                    curpModalContent.classList.add("scale-100", "opacity-100")
+                }, 10)
+            }
         }
     } catch (error) {
         console.error("Error al validar CURP:", error)
-        alert("Error al validar CURP: " + error.message)
+
+        // Mostrar modal en lugar de alert
+        const curpModal = document.getElementById("curp-modal")
+        const curpModalContent = document.getElementById("curp-modal-content")
+        const curpModalTitle = document.getElementById("curp-modal-title")
+        const curpModalMessage = document.getElementById("curp-modal-message")
+        const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
+
+        if (curpModal && curpModalContent && curpModalTitle && curpModalMessage) {
+            curpModalTitle.textContent = "Error"
+            curpModalMessage.textContent = "Error al validar CURP: " + error.message
+
+            // Ocultar palomita
+            if (curpModalCheckIcon) {
+                curpModalCheckIcon.classList.add("hidden")
+            }
+
+            curpModal.classList.remove("hidden")
+            setTimeout(() => {
+                curpModal.classList.add("opacity-100")
+                curpModalContent.classList.remove("scale-95", "opacity-0")
+                curpModalContent.classList.add("scale-100", "opacity-100")
+            }, 10)
+        }
     } finally {
         // Restaurar botón
         const validarCurpBtn = document.getElementById("validarCurpBtn")
@@ -306,7 +550,9 @@ function initCurpManager() {
     const generarCurpBtn = document.getElementById("generarCurpBtn")
     const validarCurpBtn = document.getElementById("validarCurpBtn")
     const curpInput = document.getElementById("curp")
-    const tabButtons = document.querySelectorAll(".tab-btn")
+    const curpModalClose = document.getElementById("curp-modal-close")
+    const curpModal = document.getElementById("curp-modal")
+    const curpModalConfirm = document.getElementById("curp-modal-confirm")
 
     if (generarCurpBtn) {
         console.log("Agregando event listener a generarCurpBtn")
@@ -324,43 +570,50 @@ function initCurpManager() {
         validarCurpBtn.addEventListener("click", validarCurpHandler)
     }
 
-    // Validar CURP antes de cambiar de pestaña
-    if (tabButtons.length && curpInput) {
-        tabButtons.forEach((button) => {
-            if (button.getAttribute("data-tab") !== "general") {
-                button.addEventListener("click", (e) => {
-                    const curpValue = curpInput.value.trim()
-                    if (!curpValue || !validarCURP(curpValue)) {
-                        e.preventDefault()
-                        alert("Por favor ingrese una CURP válida antes de continuar.")
-                        return false
-                    }
+    // Configurar el cierre del modal
+    if (curpModalClose && curpModal) {
+        curpModalClose.addEventListener("click", () => {
+            const curpModalContent = document.getElementById("curp-modal-content")
+            if (curpModalContent) {
+                curpModalContent.classList.remove("scale-100", "opacity-100")
+                curpModalContent.classList.add("scale-95", "opacity-0")
+                setTimeout(() => {
+                    curpModal.classList.add("hidden")
+                }, 300)
+            }
+        })
 
-                    // Verificar si la CURP ya existe en la misma sucursal
-                    verificarCURPUnica(curpValue).then((esCURPUnica) => {
-                        if (!esCURPUnica) {
-                            e.preventDefault()
-                            alert("Esta CURP ya existe en esta sucursal. No puede continuar.")
-                            return false
-                        }
-                    })
-                })
+        // Cerrar modal al hacer clic fuera
+        curpModal.addEventListener("click", (e) => {
+            if (e.target === curpModal) {
+                const curpModalContent = document.getElementById("curp-modal-content")
+                if (curpModalContent) {
+                    curpModalContent.classList.remove("scale-100", "opacity-100")
+                    curpModalContent.classList.add("scale-95", "opacity-0")
+                    setTimeout(() => {
+                        curpModal.classList.add("hidden")
+                    }, 300)
+                }
             }
         })
     }
 
-    // Validar CURP al enviar el formulario
-    const form = document.querySelector("form")
-    if (form && curpInput) {
-        form.addEventListener("submit", (e) => {
-            const curpValue = curpInput.value.trim()
-            if (!curpValue || !validarCURP(curpValue)) {
-                e.preventDefault()
-                alert("Por favor ingrese una CURP válida antes de enviar el formulario.")
-                return false
+    // Configurar el botón de confirmación del modal
+    if (curpModalConfirm && curpModal) {
+        curpModalConfirm.addEventListener("click", () => {
+            const curpModalContent = document.getElementById("curp-modal-content")
+            if (curpModalContent) {
+                curpModalContent.classList.remove("scale-100", "opacity-100")
+                curpModalContent.classList.add("scale-95", "opacity-0")
+                setTimeout(() => {
+                    curpModal.classList.add("hidden")
+                }, 300)
             }
         })
     }
+
+    // Exponer la función validarCURP globalmente para que form-handlers.js pueda usarla
+    window.validarCURP = validarCURP
 
     initialized = true
 }
@@ -375,4 +628,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Exportar funciones para uso externo
 export { initCurpManager, generarCURP, validarCURP, verificarCURPUnica }
-

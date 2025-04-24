@@ -21,13 +21,20 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Ruta para verificar si una CURP ya existe en la misma sucursal
-Route::middleware('auth:sanctum')->get('/verificar-curp', function (Request $request) {
+// Esta ruta no debe requerir autenticación para que funcione en el formulario de registro
+Route::get('/verificar-curp', function (Request $request) {
     $curp = $request->query('curp');
-    $sucursalId = auth()->user()->sucursal_id;
 
-    $existe = Cliente::where('curp', $curp)
-        ->where('sucursal_id', $sucursalId)
-        ->exists();
+    // Si no hay usuario autenticado, usar una lógica alternativa
+    if (auth()->check()) {
+        $sucursalId = auth()->user()->sucursal_id;
+        $existe = Cliente::where('curp', $curp)
+            ->where('sucursal_id', $sucursalId)
+            ->exists();
+    } else {
+        // Si no hay usuario autenticado, solo verificar si la CURP existe
+        $existe = Cliente::where('curp', $curp)->exists();
+    }
 
     return response()->json([
         'disponible' => !$existe
@@ -42,4 +49,3 @@ Route::get('/tipos-trabajo', function (Request $request) {
 
     return response()->json($tiposTrabajo);
 });
-

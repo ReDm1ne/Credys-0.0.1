@@ -9,6 +9,20 @@ import { initTiposTrabajoModal } from "./tipos-trabajo-modal" // Importar el mó
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM cargado completamente")
 
+    // Inicializar manejadores de formulario si estamos en una página con tabs
+    if (document.querySelector(".tab-btn")) {
+        console.log("Tabs encontrados, inicializando manejadores de formulario")
+        // Importar las funciones de validación de curp-manager
+        import("./curp-manager")
+            .then((module) => {
+                const { initCurpManager, validarCURP } = module
+                initFormHandlers(validarCURP)
+            })
+            .catch((error) => {
+                console.error("Error al cargar curp-manager:", error)
+                initFormHandlers() // Inicializar sin validación de CURP
+            })
+    }
     // Inicializar manejador de CURP si estamos en la página de clientes
     if (document.getElementById("curp")) {
         console.log("Elemento CURP encontrado, inicializando manejador")
@@ -21,12 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
         loadGoogleMapsApi().catch((error) => {
             console.error("Error al cargar Google Maps:", error)
         })
-    }
-
-    // Inicializar manejadores de formulario si estamos en una página con tabs
-    if (document.querySelector(".tab-btn")) {
-        console.log("Tabs encontrados, inicializando manejadores de formulario")
-        initFormHandlers()
     }
 
     // Inicializar modal de tipos de trabajo si existe el botón
@@ -54,4 +62,3 @@ document.addEventListener("DOMContentLoaded", () => {
     forceMobileSidebarClose()
     window.addEventListener("resize", forceMobileSidebarClose)
 })
-

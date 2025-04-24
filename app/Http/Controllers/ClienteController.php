@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreClienteRequest;
 use App\Http\Requests\UpdateClienteRequest;
 use App\Models\Cliente;
+use App\Models\ClienteDocumentacion;
+use App\Models\ClienteLaboralFinanciera;
 use App\Models\TipoTrabajo;
 use App\Services\ImageService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -115,58 +118,123 @@ class ClienteController extends Controller
             // Calcular el total disponible mensual
             $validatedData['total_disponible_mensual'] = $validatedData['total_ingreso_mensual'] - $validatedData['total_gasto_mensual'];
 
-            $cliente = new Cliente($validatedData);
-            $cliente->user_id = $user->id;
-            $cliente->sucursal_id = $user->sucursal_id;
+            // Iniciar transacción para asegurar que todas las operaciones se completen o ninguna
+            DB::beginTransaction();
 
-            // Manejar archivos de documentación
-            foreach ($documentFields as $field) {
-                if ($request->hasFile($field)) {
-                    $file = $request->file($field);
+            try {
+                // Separar los datos para cada tabla
+                $clienteData = array_filter($validatedData, function($key) {
+                    return !in_array($key, [
+                        // Campos de documentación
+                        'foto_cliente', 'identificacion_frente_cliente', 'identificacion_reverso_cliente',
+                        'comprobante_domicilio_cliente', 'acta_de_nacimiento_cliente', 'curp_cliente',
+                        'comprobante_ingresos_cliente', 'fachada_casa_cliente', 'fachada_negocio_cliente',
+                        // Campos laborales y financieros
+                        'tipo_de_trabajo', 'nombre_de_la_empresa', 'rfc_de_la_empresa', 'telefono_empresa',
+                        'direccion_de_la_empresa', 'referencia_de_la_empresa', 'ingreso_mensual_promedio',
+                        'otros_ingresos_mensuales', 'total_ingreso_mensual', 'gasto_alimento', 'gasto_luz',
+                        'gasto_telefono', 'gasto_transporte', 'gasto_renta', 'gasto_inversion_negocio',
+                        'gasto_otros_creditos', 'gasto_otros', 'total_gasto_mensual', 'total_disponible_mensual',
+                        'tipo_vivienda', 'refrigerador', 'estufa', 'lavadora', 'television', 'licuadora',
+                        'horno', 'computadora', 'sala', 'celular', 'vehiculo', 'vehiculo_marca', 'vehiculo_modelo'
+                    ]);
+                }, ARRAY_FILTER_USE_KEY);
 
-                    // Determinar la calidad y el ancho según el tipo de documento
-                    $width = 1200; // Ancho predeterminado
-                    $quality = 80; // Calidad predeterminada
+                // Crear el cliente principal
+                $cliente = new Cliente($clienteData);
+                $cliente->user_id = $user->id;
+                $cliente->sucursal_id = $user->sucursal_id;
+                $cliente->save();
 
-                    // Para documentos de identificación, usar mayor calidad
-                    if (in_array($field, ['identificacion_frente_cliente', 'identificacion_reverso_cliente', 'curp_cliente', 'conyuge_identificacion'])) {
-                        $quality = 90;
-                    }
+                // Preparar datos para la documentación
+                $documentacionData = [];
 
-                    // Para fotos de fachadas, usar menor resolución
-                    if (in_array($field, ['fachada_casa_cliente', 'fachada_negocio_cliente'])) {
-                        $width = 1000;
-                    }
+                // Manejar archivos de documentación
+                foreach ($documentFields as $field) {
+                    if ($request->hasFile($field)) {
+                        $file = $request->file($field);
 
-                    // Para fotos personales, usar resolución media
-                    if (in_array($field, ['foto_cliente', 'conyuge_foto'])) {
-                        $width = 800;
-                        $quality = 85;
-                    }
+                        // Determinar la calidad y el ancho según el tipo de documento
+                        $width = 1200; // Ancho predeterminado
+                        $quality = 80; // Calidad predeterminada
 
-                    try {
-                        // Optimizar y guardar la imagen
-                        $filename = $this->imageService->optimizeAndSave($file, $field . 's', $width, $quality);
-
-                        if ($filename) {
-                            $cliente->$field = $filename;
-                        } else {
-                            throw new \Exception("Error al procesar el archivo {$field}");
+                        // Para documentos de identificación, usar mayor calidad
+                        if (in_array($field, ['identificacion_frente_cliente', 'identificacion_reverso_cliente', 'curp_cliente', 'conyuge_identificacion'])) {
+                            $quality = 90;
                         }
-                    } catch (\Exception $e) {
-                        Log::error("Error al procesar archivo {$field}: " . $e->getMessage());
-                        return redirect()->back()
-                            ->withInput()
-                            ->withErrors([$field => "Error al procesar el archivo {$field}. Por favor, intente con otro archivo."]);
+
+                        // Para fotos de fachadas, usar menor resolución
+                        if (in_array($field, ['fachada_casa_cliente', 'fachada_negocio_cliente'])) {
+                            $width = 1000;
+                        }
+
+                        // Para fotos personales, usar resolución media
+                        if (in_array($field, ['foto_cliente', 'conyuge_foto'])) {
+                            $width = 800;
+                            $quality = 85;
+                        }
+
+                        try {
+                            // Optimizar y guardar la imagen
+                            $filename = $this->imageService->optimizeAndSave($file, $field . 's', $width, $quality);
+
+                            if ($filename) {
+                                // Si es un campo del cliente principal
+                                if (in_array($field, ['conyuge_foto', 'conyuge_identificacion'])) {
+                                    $cliente->$field = $filename;
+                                } else {
+                                    // Si es un campo de documentación
+                                    $documentacionData[$field] = $filename;
+                                }
+                            } else {
+                                throw new \Exception("Error al procesar el archivo {$field}");
+                            }
+                        } catch (\Exception $e) {
+                            Log::error("Error al procesar archivo {$field}: " . $e->getMessage());
+                            DB::rollBack();
+                            return redirect()->back()
+                                ->withInput()
+                                ->withErrors([$field => "Error al procesar el archivo {$field}. Por favor, intente con otro archivo."]);
+                        }
                     }
                 }
+
+                // Guardar los cambios en el cliente principal (para los campos de cónyuge)
+                $cliente->save();
+
+                // Crear registro de documentación
+                $documentacion = new ClienteDocumentacion($documentacionData);
+                $documentacion->cliente_id = $cliente->id;
+                $documentacion->save();
+
+                // Preparar datos laborales y financieros
+                $laboralFinancieraData = array_filter($validatedData, function($key) {
+                    return in_array($key, [
+                        'tipo_de_trabajo', 'nombre_de_la_empresa', 'rfc_de_la_empresa', 'telefono_empresa',
+                        'direccion_de_la_empresa', 'referencia_de_la_empresa', 'ingreso_mensual_promedio',
+                        'otros_ingresos_mensuales', 'total_ingreso_mensual', 'gasto_alimento', 'gasto_luz',
+                        'gasto_telefono', 'gasto_transporte', 'gasto_renta', 'gasto_inversion_negocio',
+                        'gasto_otros_creditos', 'gasto_otros', 'total_gasto_mensual', 'total_disponible_mensual',
+                        'tipo_vivienda', 'refrigerador', 'estufa', 'lavadora', 'television', 'licuadora',
+                        'horno', 'computadora', 'sala', 'celular', 'vehiculo', 'vehiculo_marca', 'vehiculo_modelo'
+                    ]);
+                }, ARRAY_FILTER_USE_KEY);
+
+                // Crear registro laboral y financiero
+                $laboralFinanciera = new ClienteLaboralFinanciera($laboralFinancieraData);
+                $laboralFinanciera->cliente_id = $cliente->id;
+                $laboralFinanciera->save();
+
+                // Confirmar transacción
+                DB::commit();
+
+                Log::info('Cliente creado exitosamente:', ['id' => $cliente->id]);
+
+                return redirect()->route('clientes.index')->with('success', 'Cliente creado exitosamente.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
-
-            $cliente->save();
-
-            Log::info('Cliente creado exitosamente:', ['id' => $cliente->id]);
-
-            return redirect()->route('clientes.index')->with('success', 'Cliente creado exitosamente.');
         } catch (\Exception $e) {
             Log::error('Error al crear cliente:', [
                 'message' => $e->getMessage(),
@@ -190,6 +258,9 @@ class ClienteController extends Controller
             abort(403, 'No tienes permiso para ver este cliente.');
         }
 
+        // Cargar relaciones
+        $cliente->load('documentacion', 'laboralFinanciera');
+
         return view('clientes.show', compact('cliente'));
     }
 
@@ -203,6 +274,9 @@ class ClienteController extends Controller
         if (!$user->hasRole('admin') && ($cliente->sucursal_id != $user->sucursal_id || $cliente->user_id != $user->id)) {
             abort(403, 'No tienes permiso para editar este cliente.');
         }
+
+        // Cargar relaciones
+        $cliente->load('documentacion', 'laboralFinanciera');
 
         $tiposTrabajo = TipoTrabajo::where('activo', true)->orderBy('nombre')->get();
         return view('clientes.edit', compact('cliente', 'tiposTrabajo'));
@@ -278,65 +352,134 @@ class ClienteController extends Controller
             // Calcular el total disponible mensual
             $validatedData['total_disponible_mensual'] = $validatedData['total_ingreso_mensual'] - $validatedData['total_gasto_mensual'];
 
-            // Actualizar los campos del cliente
-            $cliente->fill($validatedData);
+            // Iniciar transacción
+            DB::beginTransaction();
 
-            // Manejar archivos de documentación
-            foreach ($documentFields as $field) {
-                if ($request->hasFile($field)) {
-                    $file = $request->file($field);
+            try {
+                // Separar los datos para cada tabla
+                $clienteData = array_filter($validatedData, function($key) {
+                    return !in_array($key, [
+                        // Campos de documentación
+                        'foto_cliente', 'identificacion_frente_cliente', 'identificacion_reverso_cliente',
+                        'comprobante_domicilio_cliente', 'acta_de_nacimiento_cliente', 'curp_cliente',
+                        'comprobante_ingresos_cliente', 'fachada_casa_cliente', 'fachada_negocio_cliente',
+                        // Campos laborales y financieros
+                        'tipo_de_trabajo', 'nombre_de_la_empresa', 'rfc_de_la_empresa', 'telefono_empresa',
+                        'direccion_de_la_empresa', 'referencia_de_la_empresa', 'ingreso_mensual_promedio',
+                        'otros_ingresos_mensuales', 'total_ingreso_mensual', 'gasto_alimento', 'gasto_luz',
+                        'gasto_telefono', 'gasto_transporte', 'gasto_renta', 'gasto_inversion_negocio',
+                        'gasto_otros_creditos', 'gasto_otros', 'total_gasto_mensual', 'total_disponible_mensual',
+                        'tipo_vivienda', 'refrigerador', 'estufa', 'lavadora', 'television', 'licuadora',
+                        'horno', 'computadora', 'sala', 'celular', 'vehiculo', 'vehiculo_marca', 'vehiculo_modelo'
+                    ]);
+                }, ARRAY_FILTER_USE_KEY);
 
-                    // Determinar la calidad y el ancho según el tipo de documento
-                    $width = 1200; // Ancho predeterminado
-                    $quality = 80; // Calidad predeterminada
+                // Actualizar el cliente principal
+                $cliente->fill($clienteData);
 
-                    // Para documentos de identificación, usar mayor calidad
-                    if (in_array($field, ['identificacion_frente_cliente', 'identificacion_reverso_cliente', 'curp_cliente', 'conyuge_identificacion'])) {
-                        $quality = 90;
-                    }
+                // Obtener o crear documentación y laboral financiera si no existen
+                $documentacion = $cliente->documentacion ?? new ClienteDocumentacion(['cliente_id' => $cliente->id]);
+                $laboralFinanciera = $cliente->laboralFinanciera ?? new ClienteLaboralFinanciera(['cliente_id' => $cliente->id]);
 
-                    // Para fotos de fachadas, usar menor resolución
-                    if (in_array($field, ['fachada_casa_cliente', 'fachada_negocio_cliente'])) {
-                        $width = 1000;
-                    }
+                // Manejar archivos de documentación
+                foreach ($documentFields as $field) {
+                    if ($request->hasFile($field)) {
+                        $file = $request->file($field);
 
-                    // Para fotos personales, usar resolución media
-                    if (in_array($field, ['foto_cliente', 'conyuge_foto'])) {
-                        $width = 800;
-                        $quality = 85;
-                    }
+                        // Determinar la calidad y el ancho según el tipo de documento
+                        $width = 1200; // Ancho predeterminado
+                        $quality = 80; // Calidad predeterminada
 
-                    try {
-                        // Eliminar archivo anterior si existe
-                        if ($cliente->$field) {
-                            $oldFilePath = $field . 's/' . $cliente->$field;
-                            if (Storage::disk('public')->exists($oldFilePath)) {
-                                Storage::disk('public')->delete($oldFilePath);
+                        // Para documentos de identificación, usar mayor calidad
+                        if (in_array($field, ['identificacion_frente_cliente', 'identificacion_reverso_cliente', 'curp_cliente', 'conyuge_identificacion'])) {
+                            $quality = 90;
+                        }
+
+                        // Para fotos de fachadas, usar menor resolución
+                        if (in_array($field, ['fachada_casa_cliente', 'fachada_negocio_cliente'])) {
+                            $width = 1000;
+                        }
+
+                        // Para fotos personales, usar resolución media
+                        if (in_array($field, ['foto_cliente', 'conyuge_foto'])) {
+                            $width = 800;
+                            $quality = 85;
+                        }
+
+                        try {
+                            // Determinar el archivo anterior y su ubicación
+                            $oldFilename = null;
+                            if (in_array($field, ['conyuge_foto', 'conyuge_identificacion'])) {
+                                $oldFilename = $cliente->$field;
+                            } else {
+                                $oldFilename = $documentacion->$field ?? null;
                             }
-                        }
 
-                        // Optimizar y guardar la nueva imagen
-                        $filename = $this->imageService->optimizeAndSave($file, $field . 's', $width, $quality);
+                            // Eliminar archivo anterior si existe
+                            if ($oldFilename) {
+                                $oldFilePath = $field . 's/' . $oldFilename;
+                                if (Storage::disk('public')->exists($oldFilePath)) {
+                                    Storage::disk('public')->delete($oldFilePath);
+                                }
+                            }
 
-                        if ($filename) {
-                            $cliente->$field = $filename;
-                        } else {
-                            throw new \Exception("Error al procesar el archivo {$field}");
+                            // Optimizar y guardar la nueva imagen
+                            $filename = $this->imageService->optimizeAndSave($file, $field . 's', $width, $quality);
+
+                            if ($filename) {
+                                // Si es un campo del cliente principal
+                                if (in_array($field, ['conyuge_foto', 'conyuge_identificacion'])) {
+                                    $cliente->$field = $filename;
+                                } else {
+                                    // Si es un campo de documentación
+                                    $documentacion->$field = $filename;
+                                }
+                            } else {
+                                throw new \Exception("Error al procesar el archivo {$field}");
+                            }
+                        } catch (\Exception $e) {
+                            Log::error("Error al procesar archivo {$field}: " . $e->getMessage());
+                            DB::rollBack();
+                            return redirect()->back()
+                                ->withInput()
+                                ->withErrors([$field => "Error al procesar el archivo {$field}. Por favor, intente con otro archivo."]);
                         }
-                    } catch (\Exception $e) {
-                        Log::error("Error al procesar archivo {$field}: " . $e->getMessage());
-                        return redirect()->back()
-                            ->withInput()
-                            ->withErrors([$field => "Error al procesar el archivo {$field}. Por favor, intente con otro archivo."]);
                     }
                 }
+
+                // Guardar el cliente principal
+                $cliente->save();
+
+                // Guardar documentación
+                $documentacion->save();
+
+                // Preparar datos laborales y financieros
+                $laboralFinancieraData = array_filter($validatedData, function($key) {
+                    return in_array($key, [
+                        'tipo_de_trabajo', 'nombre_de_la_empresa', 'rfc_de_la_empresa', 'telefono_empresa',
+                        'direccion_de_la_empresa', 'referencia_de_la_empresa', 'ingreso_mensual_promedio',
+                        'otros_ingresos_mensuales', 'total_ingreso_mensual', 'gasto_alimento', 'gasto_luz',
+                        'gasto_telefono', 'gasto_transporte', 'gasto_renta', 'gasto_inversion_negocio',
+                        'gasto_otros_creditos', 'gasto_otros', 'total_gasto_mensual', 'total_disponible_mensual',
+                        'tipo_vivienda', 'refrigerador', 'estufa', 'lavadora', 'television', 'licuadora',
+                        'horno', 'computadora', 'sala', 'celular', 'vehiculo', 'vehiculo_marca', 'vehiculo_modelo'
+                    ]);
+                }, ARRAY_FILTER_USE_KEY);
+
+                // Actualizar registro laboral y financiero
+                $laboralFinanciera->fill($laboralFinancieraData);
+                $laboralFinanciera->save();
+
+                // Confirmar transacción
+                DB::commit();
+
+                Log::info('Cliente actualizado exitosamente:', ['id' => $cliente->id]);
+
+                return redirect()->route('clientes.index')->with('success', 'Cliente actualizado exitosamente.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
-
-            $cliente->save();
-
-            Log::info('Cliente actualizado exitosamente:', ['id' => $cliente->id]);
-
-            return redirect()->route('clientes.index')->with('success', 'Cliente actualizado exitosamente.');
         } catch (\Exception $e) {
             Log::error('Error al actualizar cliente:', [
                 'message' => $e->getMessage(),
@@ -361,29 +504,55 @@ class ClienteController extends Controller
                 abort(403, 'No tienes permiso para eliminar este cliente.');
             }
 
-            // Eliminar archivos asociados
-            $documentFields = [
-                'conyuge_foto', 'conyuge_identificacion', 'foto_cliente',
-                'identificacion_frente_cliente', 'identificacion_reverso_cliente',
-                'comprobante_domicilio_cliente', 'acta_de_nacimiento_cliente',
-                'curp_cliente', 'comprobante_ingresos_cliente',
-                'fachada_casa_cliente', 'fachada_negocio_cliente'
-            ];
+            // Cargar relaciones
+            $cliente->load('documentacion', 'laboralFinanciera');
 
-            foreach ($documentFields as $field) {
-                if ($cliente->$field) {
-                    $filePath = $field . 's/' . $cliente->$field;
-                    if (Storage::disk('public')->exists($filePath)) {
-                        Storage::disk('public')->delete($filePath);
+            // Iniciar transacción
+            DB::beginTransaction();
+
+            try {
+                // Eliminar archivos asociados al cliente principal
+                $clienteFields = ['conyuge_foto', 'conyuge_identificacion'];
+                foreach ($clienteFields as $field) {
+                    if ($cliente->$field) {
+                        $filePath = $field . 's/' . $cliente->$field;
+                        if (Storage::disk('public')->exists($filePath)) {
+                            Storage::disk('public')->delete($filePath);
+                        }
                     }
                 }
+
+                // Eliminar archivos asociados a la documentación
+                if ($cliente->documentacion) {
+                    $documentFields = [
+                        'foto_cliente', 'identificacion_frente_cliente', 'identificacion_reverso_cliente',
+                        'comprobante_domicilio_cliente', 'acta_de_nacimiento_cliente', 'curp_cliente',
+                        'comprobante_ingresos_cliente', 'fachada_casa_cliente', 'fachada_negocio_cliente'
+                    ];
+
+                    foreach ($documentFields as $field) {
+                        if ($cliente->documentacion->$field) {
+                            $filePath = $field . 's/' . $cliente->documentacion->$field;
+                            if (Storage::disk('public')->exists($filePath)) {
+                                Storage::disk('public')->delete($filePath);
+                            }
+                        }
+                    }
+                }
+
+                // Eliminar el cliente (esto eliminará automáticamente las relaciones debido a onDelete('cascade'))
+                $cliente->delete();
+
+                // Confirmar transacción
+                DB::commit();
+
+                Log::info('Cliente eliminado exitosamente:', ['id' => $cliente->id]);
+
+                return redirect()->route('clientes.index')->with('success', 'Cliente eliminado exitosamente.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
-
-            $cliente->delete();
-
-            Log::info('Cliente eliminado exitosamente:', ['id' => $cliente->id]);
-
-            return redirect()->route('clientes.index')->with('success', 'Cliente eliminado exitosamente.');
         } catch (\Exception $e) {
             Log::error('Error al eliminar cliente:', [
                 'message' => $e->getMessage(),

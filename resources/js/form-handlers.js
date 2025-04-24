@@ -10,52 +10,374 @@ let initialized = false
 function initTabHandler() {
     const tabButtons = document.querySelectorAll(".tab-btn")
     const tabContents = document.querySelectorAll(".tab-content")
+    const progressBar = document.getElementById("progress-bar")
+    const progressText = document.getElementById("progress-text")
+    const validationError = document.getElementById("validation-error")
+    const validationErrorMessage = document.getElementById("validation-error-message")
+    const curpModal = document.getElementById("curp-modal")
+    const curpModalContent = document.getElementById("curp-modal-content")
+    const curpModalTitle = document.getElementById("curp-modal-title")
+    const curpModalMessage = document.getElementById("curp-modal-message")
+    const curpModalClose = document.getElementById("curp-modal-close")
+    const curpInput = document.getElementById("curp")
+    const curpModalCheckIcon = document.getElementById("curp-modal-check-icon")
 
     if (!tabButtons.length || !tabContents.length) return
 
+    // Función para mostrar el modal de CURP
+    function showCurpModal(title, message, isSuccess = false) {
+        if (!curpModal || !curpModalTitle || !curpModalMessage || !curpModalContent) return
+
+        curpModalTitle.textContent = title
+        curpModalMessage.textContent = message
+
+        // Mostrar el icono de palomita si es éxito
+        const checkIcon = document.getElementById("curp-modal-check-icon")
+        if (checkIcon) {
+            if (isSuccess) {
+                checkIcon.classList.remove("hidden")
+            } else {
+                checkIcon.classList.add("hidden")
+            }
+        }
+
+        curpModal.classList.remove("hidden")
+        setTimeout(() => {
+            curpModalContent.classList.remove("scale-95", "opacity-0")
+            curpModalContent.classList.add("scale-100", "opacity-100")
+        }, 10)
+    }
+
+    // Función para cerrar el modal de CURP
+    function closeCurpModal() {
+        if (!curpModal || !curpModalContent) return
+
+        curpModalContent.classList.remove("scale-100", "opacity-100")
+        curpModalContent.classList.add("scale-95", "opacity-0")
+        setTimeout(() => {
+            curpModal.classList.add("hidden")
+        }, 300)
+    }
+
+    // Evento para cerrar el modal de CURP
+    if (curpModalClose) {
+        curpModalClose.addEventListener("click", closeCurpModal)
+    }
+    if (curpModal) {
+        curpModal.addEventListener("click", (e) => {
+            if (e.target === curpModal) {
+                closeCurpModal()
+            }
+        })
+    }
+
+    // Evento para el botón de confirmación del modal
+    const curpModalConfirm = document.getElementById("curp-modal-confirm")
+    if (curpModalConfirm) {
+        curpModalConfirm.addEventListener("click", closeCurpModal)
+    }
+
+    // Validar CURP
+    async function validateCurp() {
+        if (!curpInput) return true
+
+        const curpValue = curpInput.value.trim()
+        const validationMessage = document.getElementById("validationMessage")
+        const validationSuccessMessage = document.getElementById("validationSuccessMessage")
+
+        if (!curpValue) {
+            showCurpModal("CURP Vacía", "Por favor ingrese una CURP para continuar.")
+            return false
+        }
+
+        // Usar la función validarCURP del curp-manager.js si está disponible
+        let isValidFormat = true
+        if (typeof window.validarCURP === "function") {
+            isValidFormat = window.validarCURP(curpValue)
+        } else {
+            // Fallback si la función no está disponible
+            const curpRegex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A][0-9]$/
+            isValidFormat = curpRegex.test(curpValue)
+        }
+
+        if (!isValidFormat) {
+            if (validationMessage) validationMessage.classList.remove("hidden")
+            if (validationSuccessMessage) validationSuccessMessage.classList.add("hidden")
+            showCurpModal(
+                "CURP Inválida",
+                "El formato de la CURP ingresada no es válido. Por favor verifique e intente nuevamente.",
+            )
+            return false
+        }
+
+        // Verificar si la CURP ya existe en la misma sucursal
+        try {
+            const response = await fetch(`/api/verificar-curp?curp=${curpValue}`)
+
+            // Verificar si la respuesta es JSON válido
+            const contentType = response.headers.get("content-type")
+            if (!contentType || !contentType.includes("application/json")) {
+                console.error("La respuesta no es JSON válido:", await response.text())
+                showCurpModal("Error de Verificación", "Ocurrió un error al verificar la CURP. Por favor intente nuevamente.")
+                return false
+            }
+
+            const data = await response.json()
+
+            if (!data.disponible) {
+                if (validationMessage) validationMessage.classList.remove("hidden")
+                if (validationSuccessMessage) validationSuccessMessage.classList.add("hidden")
+                showCurpModal(
+                    "CURP Duplicada",
+                    "Esta CURP ya está registrada en esta sucursal. No es posible continuar con el registro.",
+                )
+                return false
+            }
+
+            if (validationMessage) validationMessage.classList.add("hidden")
+            if (validationSuccessMessage) validationSuccessMessage.classList.remove("hidden")
+            showCurpModal(
+                "CURP Válida",
+                "La CURP ingresada es válida y está disponible para su uso.",
+                true, // Indicar que es un éxito para mostrar la palomita
+            )
+            return true
+        } catch (error) {
+            console.error("Error al verificar CURP:", error)
+            showCurpModal("Error de Verificación", "Ocurrió un error al verificar la CURP. Por favor intente nuevamente.")
+            return false
+        }
+    }
+
+    // Agregar evento para validar CURP manualmente
+    const validarCurpBtn = document.getElementById("validarCurpBtn")
+    if (validarCurpBtn) {
+        validarCurpBtn.addEventListener("click", validateCurp)
+    }
+
     tabButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            // Desactivar todas las tabs
-            tabButtons.forEach((btn) => {
-                btn.classList.remove("active")
-                btn.classList.remove("border-blue-600")
-                btn.classList.remove("text-blue-600")
-                btn.classList.add("border-transparent")
-                btn.classList.add("text-gray-500")
-                btn.classList.add("hover:text-gray-700")
-                btn.classList.add("hover:border-gray-300")
-            })
+        button.addEventListener("click", async (e) => {
+            e.preventDefault()
 
-            // Ocultar todos los contenidos
-            tabContents.forEach((content) => {
-                content.classList.add("hidden")
-            })
+            // Obtener el tab actual que está visible
+            const currentTabContent = document.querySelector(".tab-content:not(.hidden)")
+            if (!currentTabContent) return
 
-            // Activar la tab seleccionada
-            button.classList.add("active")
-            button.classList.add("border-blue-600")
-            button.classList.add("text-blue-600")
-            button.classList.remove("border-transparent")
-            button.classList.remove("text-gray-500")
-            button.classList.remove("hover:text-gray-700")
-            button.classList.remove("hover:border-gray-300")
+            const currentTab = currentTabContent.id
+            const targetTab = button.getAttribute("data-tab")
 
-            // Mostrar el contenido seleccionado
-            const tabId = button.getAttribute("data-tab")
-            const tabContent = document.getElementById(tabId)
-            if (tabContent) {
-                tabContent.classList.remove("hidden")
+            // Si estamos en la pestaña general y queremos ir a otra, validar la CURP primero
+            if (currentTab === "general" && targetTab !== "general") {
+                const curpValid = await validateCurp()
+                if (!curpValid) return
+            }
+
+            // Validar los campos del tab actual antes de cambiar
+            if (validateTabFields(currentTab)) {
+                changeTab(targetTab)
             }
         })
     })
+
+    // Botones de navegación
+    const nextBtn1 = document.getElementById("next-btn-1")
+    const nextBtn2 = document.getElementById("next-btn-2")
+    const nextBtn3 = document.getElementById("next-btn-3")
+    const nextBtn4 = document.getElementById("next-btn-4")
+    const prevBtn2 = document.getElementById("prev-btn-2")
+    const prevBtn3 = document.getElementById("prev-btn-3")
+    const prevBtn4 = document.getElementById("prev-btn-4")
+    const prevBtn5 = document.getElementById("prev-btn-5")
+
+    if (nextBtn1) {
+        nextBtn1.addEventListener("click", async () => {
+            // Validar CURP primero
+            const curpValid = await validateCurp()
+            if (!curpValid) return
+
+            if (validateTabFields("general")) {
+                changeTab("referencias")
+            }
+        })
+    }
+
+    if (nextBtn2) {
+        nextBtn2.addEventListener("click", () => {
+            if (validateTabFields("referencias")) {
+                changeTab("financiera")
+            }
+        })
+    }
+
+    if (nextBtn3) {
+        nextBtn3.addEventListener("click", () => {
+            if (validateTabFields("financiera")) {
+                changeTab("laboral")
+            }
+        })
+    }
+
+    if (nextBtn4) {
+        nextBtn4.addEventListener("click", () => {
+            if (validateTabFields("laboral")) {
+                changeTab("documentacion")
+            }
+        })
+    }
+
+    if (prevBtn2) {
+        prevBtn2.addEventListener("click", () => {
+            changeTab("general")
+        })
+    }
+
+    if (prevBtn3) {
+        prevBtn3.addEventListener("click", () => {
+            changeTab("referencias")
+        })
+    }
+
+    if (prevBtn4) {
+        prevBtn4.addEventListener("click", () => {
+            changeTab("financiera")
+        })
+    }
+
+    if (prevBtn5) {
+        prevBtn5.addEventListener("click", () => {
+            changeTab("laboral")
+        })
+    }
+
+    function changeTab(targetTab) {
+        tabContents.forEach((content) => {
+            content.classList.add("hidden")
+        })
+
+        tabButtons.forEach((btn) => {
+            btn.classList.remove("active", "border-blue-600", "text-blue-600")
+            btn.classList.add("border-transparent", "text-gray-500", "hover:text-gray-700", "hover:border-gray-300")
+        })
+
+        const tabContent = document.getElementById(targetTab)
+        tabContent.classList.remove("hidden")
+
+        const tabButton = document.querySelector(`[data-tab="${targetTab}"]`)
+        tabButton.classList.add("active", "border-blue-600", "text-blue-600")
+        tabButton.classList.remove("border-transparent", "text-gray-500", "hover:text-gray-700", "hover:border-gray-300")
+
+        const step = Number.parseInt(tabContent.dataset.step)
+        updateProgress(step)
+    }
+
+    function updateProgress(step) {
+        if (!progressBar || !progressText) return
+
+        const totalSteps = 5
+        const percentage = (step / totalSteps) * 100
+        progressBar.style.width = `${percentage}%`
+        progressText.textContent = `Paso ${step} de ${totalSteps}`
+    }
+
+    function validateTabFields(tabId) {
+        const tab = document.getElementById(tabId)
+        if (!tab) return true
+
+        // Solo validar los campos visibles en la pestaña actual
+        const requiredFields = tab.querySelectorAll(
+            "input[required]:not([type='hidden']), select[required], textarea[required]",
+        )
+        let isValid = true
+        let firstInvalidField = null
+        const errorMessages = []
+
+        requiredFields.forEach((field) => {
+            // Verificar si el campo o su contenedor padre está oculto
+            if (
+                field.offsetParent === null ||
+                field.closest(".hidden") !== null ||
+                window.getComputedStyle(field).display === "none"
+            ) {
+                return // Saltar campos ocultos
+            }
+
+            const fieldLabel = field.previousElementSibling ? field.previousElementSibling.textContent.trim() : field.name
+            const fieldName = fieldLabel.replace(" *", "")
+
+            if (field.type === "radio") {
+                const name = field.name
+                const checkedRadio = tab.querySelector(`input[name="${name}"]:checked`)
+                if (!checkedRadio) {
+                    isValid = false
+                    errorMessages.push(`El campo "${fieldName}" es obligatorio.`)
+                    if (!firstInvalidField) {
+                        firstInvalidField = field
+                    }
+                }
+            } else if (field.value.trim() === "") {
+                isValid = false
+                field.classList.add("border-red-500")
+                errorMessages.push(`El campo "${fieldName}" es obligatorio.`)
+                if (!firstInvalidField) {
+                    firstInvalidField = field
+                }
+            } else {
+                field.classList.remove("border-red-500")
+            }
+        })
+
+        if (!isValid && validationError && validationErrorMessage) {
+            validationError.classList.remove("hidden")
+            validationErrorMessage.innerHTML = errorMessages.map((msg) => `<li>${msg}</li>`).join("")
+            if (firstInvalidField) {
+                firstInvalidField.focus()
+                firstInvalidField.scrollIntoView({ behavior: "smooth", block: "center" })
+            }
+            setTimeout(() => {
+                validationError.classList.add("hidden")
+            }, 5000)
+        }
+
+        return isValid
+    }
+
+    // Manejar envío del formulario
+    const form = document.getElementById("cliente-form")
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault()
+
+            // Validar la pestaña actual
+            const currentTabContent = document.querySelector(".tab-content:not(.hidden)")
+            if (!currentTabContent) return
+
+            const currentTab = currentTabContent.id
+            if (!validateTabFields(currentTab)) {
+                return
+            }
+
+            // Validar CURP una última vez
+            const curpValid = await validateCurp()
+            if (!curpValid) {
+                return
+            }
+
+            // Mostrar indicador de carga
+            const submitBtn = document.getElementById("crearClienteBtn")
+            const loading = document.getElementById("loading")
+            if (submitBtn) submitBtn.disabled = true
+            if (loading) loading.classList.remove("hidden")
+
+            // Enviar el formulario
+            form.submit()
+        })
+    }
 }
 
 // Función para manejar la sección de cónyuge
 function initConyugeSection() {
     const estadoCivilSelect = document.getElementById("estado_civil")
     const conyugeSection = document.getElementById("conyuge_section")
-    const conyugeFotoInput = document.getElementById("conyuge_foto")
-    const conyugeCredencialInput = document.getElementById("conyuge_credencial")
 
     if (!estadoCivilSelect || !conyugeSection) return
 
@@ -63,12 +385,8 @@ function initConyugeSection() {
         const value = estadoCivilSelect.value
         if (value === "Casado" || value === "Union Libre") {
             conyugeSection.classList.remove("hidden")
-            // No hacemos requeridos los campos de foto y credencial, son opcionales
         } else {
             conyugeSection.classList.add("hidden")
-            // Limpiar los campos de archivo cuando se oculta la sección
-            if (conyugeFotoInput) conyugeFotoInput.value = ""
-            if (conyugeCredencialInput) conyugeCredencialInput.value = ""
         }
     })
 }
@@ -218,4 +536,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Exportar funciones para uso externo
 export { initFormHandlers }
-

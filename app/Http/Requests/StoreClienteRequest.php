@@ -22,7 +22,6 @@ class StoreClienteRequest extends FormRequest
             'email' => 'required|email|max:255',
             'telefono_celular' => 'required|string|regex:/^[0-9]{10}$/',
             'telefono_particular' => 'required|string|regex:/^[0-9]{10}$/',
-
             'fecha_nacimiento' => 'required|date',
             'lugar_nacimiento' => 'required|string|max:255',
             'estado_civil' => 'required|string|max:255',
@@ -219,4 +218,3 @@ class StoreClienteRequest extends FormRequest
         ];
     }
 }
-
