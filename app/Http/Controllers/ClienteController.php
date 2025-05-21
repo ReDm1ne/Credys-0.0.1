@@ -7,8 +7,10 @@ use App\Http\Requests\UpdateClienteRequest;
 use App\Models\Cliente;
 use App\Models\ClienteDocumentacion;
 use App\Models\ClienteLaboralFinanciera;
+use App\Models\ListaNegra;
 use App\Models\TipoTrabajo;
 use App\Services\ImageService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -69,6 +71,21 @@ class ClienteController extends Controller
                 return redirect()->back()
                     ->withInput()
                     ->withErrors(['curp' => 'Ya existe un cliente con esta CURP en esta sucursal.']);
+            }
+
+            // Verificar si el cliente está en la lista negra
+            $enListaNegra = ListaNegra::estaEnListaNegra(
+                $validatedData['curp'] ?? null,
+                $validatedData['rfc'] ?? null,
+                $validatedData['email'] ?? null,
+                $validatedData['telefono_celular'] ?? null
+            );
+
+            if ($enListaNegra) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['lista_negra' => 'ADVERTENCIA: Esta persona se encuentra en la lista negra con nivel de riesgo ' .
+                        strtoupper($enListaNegra->nivel_riesgo) . '. Motivo: ' . $enListaNegra->motivo]);
             }
 
             // Verificar tamaño de archivos antes de procesarlos
@@ -261,7 +278,15 @@ class ClienteController extends Controller
         // Cargar relaciones
         $cliente->load('documentacion', 'laboralFinanciera');
 
-        return view('clientes.show', compact('cliente'));
+        // Verificar si el cliente está en la lista negra
+        $enListaNegra = ListaNegra::estaEnListaNegra(
+            $cliente->curp,
+            $cliente->rfc,
+            $cliente->email,
+            $cliente->telefono_celular
+        );
+
+        return view('clientes.show', compact('cliente', 'enListaNegra'));
     }
 
     /**
@@ -278,8 +303,16 @@ class ClienteController extends Controller
         // Cargar relaciones
         $cliente->load('documentacion', 'laboralFinanciera');
 
+        // Verificar si el cliente está en la lista negra
+        $enListaNegra = ListaNegra::estaEnListaNegra(
+            $cliente->curp,
+            $cliente->rfc,
+            $cliente->email,
+            $cliente->telefono_celular
+        );
+
         $tiposTrabajo = TipoTrabajo::where('activo', true)->orderBy('nombre')->get();
-        return view('clientes.edit', compact('cliente', 'tiposTrabajo'));
+        return view('clientes.edit', compact('cliente', 'tiposTrabajo', 'enListaNegra'));
     }
 
     /**
@@ -306,6 +339,20 @@ class ClienteController extends Controller
                 return redirect()->back()
                     ->withInput()
                     ->withErrors(['curp' => 'Ya existe otro cliente con esta CURP en esta sucursal.']);
+            }
+
+            // Verificar si el cliente está en la lista negra (solo mostrar advertencia, no bloquear)
+            $enListaNegra = ListaNegra::estaEnListaNegra(
+                $validatedData['curp'] ?? null,
+                $validatedData['rfc'] ?? null,
+                $validatedData['email'] ?? null,
+                $validatedData['telefono_celular'] ?? null
+            );
+
+            if ($enListaNegra) {
+                // Solo mostrar advertencia, no bloquear la actualización
+                session()->flash('warning', 'ADVERTENCIA: Esta persona se encuentra en la lista negra con nivel de riesgo ' .
+                    strtoupper($enListaNegra->nivel_riesgo) . '. Motivo: ' . $enListaNegra->motivo);
             }
 
             // Verificar tamaño de archivos antes de procesarlos
@@ -560,6 +607,72 @@ class ClienteController extends Controller
             ]);
 
             return redirect()->back()->withErrors(['error' => 'Error al eliminar cliente: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Agregar cliente a la lista negra
+     */
+    public function agregarAListaNegra(Request $request, Cliente $cliente)
+    {
+        $request->validate([
+            'motivo' => 'required|string',
+            'nivel_riesgo' => 'required|in:bajo,medio,alto,critico',
+            'fecha_vencimiento' => 'nullable|date|after:today',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        try {
+            $user = auth()->user();
+
+            // Verificar que el usuario tenga acceso a este cliente
+            if (!$user->hasRole('admin') && ($cliente->sucursal_id != $user->sucursal_id || $cliente->user_id != $user->id)) {
+                abort(403, 'No tienes permiso para agregar este cliente a la lista negra.');
+            }
+
+            // Verificar si ya existe en la lista negra
+            $existente = ListaNegra::where('cliente_id', $cliente->id)
+                ->where('activo', true)
+                ->first();
+
+            if ($existente) {
+                return redirect()->back()->withErrors(['error' => 'Este cliente ya se encuentra en la lista negra.']);
+            }
+
+            DB::beginTransaction();
+
+            $listaNegra = new ListaNegra([
+                'nombre' => $cliente->nombre,
+                'apellido_paterno' => $cliente->apellido_paterno,
+                'apellido_materno' => $cliente->apellido_materno,
+                'curp' => $cliente->curp,
+                'rfc' => $cliente->rfc,
+                'telefono' => $cliente->telefono_celular,
+                'email' => $cliente->email,
+                'motivo' => $request->motivo,
+                'nivel_riesgo' => $request->nivel_riesgo,
+                'fecha_registro' => now(),
+                'fecha_vencimiento' => $request->fecha_vencimiento,
+                'observaciones' => $request->observaciones,
+                'reportado_por' => $user->name,
+                'cliente_id' => $cliente->id,
+                'user_id' => $user->id,
+                'sucursal_id' => $user->sucursal_id,
+                'activo' => true
+            ]);
+
+            $listaNegra->save();
+
+            DB::commit();
+
+            return redirect()->route('clientes.show', $cliente->id)
+                ->with('success', 'Cliente agregado a la lista negra correctamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al agregar cliente a lista negra: ' . $e->getMessage());
+
+            return redirect()->back()->withErrors(['error' => 'Error al agregar a la lista negra: ' . $e->getMessage()]);
         }
     }
 }
